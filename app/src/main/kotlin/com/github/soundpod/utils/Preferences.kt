@@ -1,0 +1,264 @@
+@file:Suppress("unused")
+
+package com.github.soundpod.utils
+
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.annotation.StringRes
+import androidx.compose.runtime.Composable
+import com.github.soundpod.R
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.edit
+
+const val coilDiskCacheMaxSizeKey = "coilDiskCacheMaxSize"
+const val exoPlayerDiskCacheMaxSizeKey = "exoPlayerDiskCacheMaxSize"
+const val isInvincibilityEnabledKey = "isInvincibilityEnabled"
+const val songSortOrderKey = "songSortOrder"
+const val songSortByKey = "songSortBy"
+const val playlistSortOrderKey = "playlistSortOrder"
+const val playlistSortByKey = "playlistSortBy"
+const val albumSortOrderKey = "albumSortOrder"
+const val albumSortByKey = "albumSortBy"
+const val artistSortOrderKey = "artistSortOrder"
+const val artistSortByKey = "artistSortBy"
+const val historySortOrderKey = "historySortOrder"
+const val historySortByKey = "historySortBy"
+const val historyCustomOrderKey = "historyCustomOrder"
+const val trackLoopEnabledKey = "trackLoopEnabled"
+const val queueLoopEnabledKey = "queueLoopEnabled"
+const val skipSilenceKey = "skipSilence"
+const val volumeNormalizationKey = "volumeNormalization"
+const val playbackSpeedKey = "playbackSpeed"
+const val playbackPitchKey = "playbackPitch"
+const val pauseOnAppCloseKey = "pauseOnAppClose"
+const val stopAfterCurrentKey = "stopAfterCurrent"
+const val resumePlaybackWhenDeviceConnectedKey = "resumePlaybackWhenDeviceConnected"
+const val persistentQueueKey = "persistentQueue"
+const val shuffleModeEnabledKey = "shuffleModeEnabled"
+const val isShowingThumbnailInLockscreenKey = "isShowingThumbnailInLockscreen"
+const val searchResultScreenTabIndexKey = "searchResultScreenTabIndex"
+const val pauseSearchHistoryKey = "pauseSearchHistory"
+const val selectedSleepTimerPresetKey = "selectedSleepTimerPreset"
+
+const val pauseSongCacheKey = "pauseSongCache"
+const val pauseImageCacheKey = "pauseImageCache"
+const val showCachedSongsInOfflineKey = "showCachedSongsInOffline"
+const val quickPicksSourceKey = "quickPicksSource"
+const val quickPicksCustomGenreKey = "quickPicksCustomGenre"
+const val isScreenCacheEnabledKey = "isScreenCacheEnabled"
+
+const val appTheme = "appTheme"
+const val progressBarStyle = "progressBarStyle"
+
+const val playerlayout = "playerlayout"
+
+const val homeStyleKey = "homeStyle"
+
+const val showHomeTabKey = "showHomeTab"
+const val showFavoritesTabKey = "showFavoritesTab"
+const val showSongsTabKey = "showSongsTab"
+const val showArtistsTabKey = "showArtistsTab"
+const val showAlbumsTabKey = "showAlbumsTab"
+const val showPlaylistsTabKey = "showPlaylistsTab"
+const val showFollowingTabKey = "showFollowingTab"
+
+const val autoBackup = "autoBackup"
+
+const val autoBackupUriPrefKey = "autoBackupUri"
+const val listGesturesEnabledKey = "listGesturesEnabled"
+const val playbackSourceKey = "playbackSource"
+
+const val updateAvailableKey = "updateAvailable"
+const val appearanceUpdatedKey = "appearanceUpdated"
+
+enum class PlaybackSource(val resourceId: Int) {
+    Automatic(R.string.automatic),
+    NewPipe(R.string.newpipe),
+    Soundcore(R.string.soundcore)
+}
+
+enum class HomeStyle(val resourceId: Int) {
+    SamsungHome(R.string.samsung_music),
+    SoundPodHome(R.string.app_name),
+    AppleHome (R.string.apple_music)
+}
+
+enum class PlayerLayout(
+    @get:StringRes val resourceId: Int
+) {
+    SamsungMusic(
+        resourceId = R.string.samsung_music,
+    ),
+    SoundPod(
+        resourceId = R.string.app_name,
+    ),
+    AppleMusic(
+        resourceId = R.string.apple_music,
+    ),
+    YoutubeMusic(
+        resourceId = R.string.youtube_music,
+    )
+}
+
+inline fun <reified T : Enum<T>> SharedPreferences.getEnum(
+    key: String,
+    defaultValue: T
+): T =
+    getString(key, null)?.let {
+        try {
+            enumValueOf<T>(it)
+        } catch (_: IllegalArgumentException) {
+            null
+        }
+    } ?: defaultValue
+
+inline fun <reified T : Enum<T>> SharedPreferences.Editor.putEnum(
+    key: String,
+    value: T
+): SharedPreferences.Editor =
+    putString(key, value.name)
+
+val Context.preferences: SharedPreferences
+    get() = getSharedPreferences("preferences", Context.MODE_PRIVATE)
+
+@Composable
+fun rememberPreference(key: String, defaultValue: Boolean): MutableState<Boolean> {
+    val context = LocalContext.current
+    val preferences = context.preferences
+    val state = remember { mutableStateOf(preferences.getBoolean(key, defaultValue)) }
+
+    DisposableEffect(key) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPrefs, changedKey ->
+            if (changedKey == key) {
+                state.value = sharedPrefs.getBoolean(key, defaultValue)
+            }
+        }
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            preferences.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    LaunchedEffect(state.value) {
+        if (state.value != preferences.getBoolean(key, defaultValue)) {
+            preferences.edit { putBoolean(key, state.value) }
+        }
+    }
+
+    return state
+}
+
+@Composable
+fun rememberPreference(key: String, defaultValue: Int): MutableState<Int> {
+    val context = LocalContext.current
+    val preferences = context.preferences
+    val state = remember { mutableIntStateOf(preferences.getInt(key, defaultValue)) }
+
+    DisposableEffect(key) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPrefs, changedKey ->
+            if (changedKey == key) {
+                state.intValue = sharedPrefs.getInt(key, defaultValue)
+            }
+        }
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            preferences.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    LaunchedEffect(state.intValue) {
+        if (state.intValue != preferences.getInt(key, defaultValue)) {
+            preferences.edit { putInt(key, state.intValue) }
+        }
+    }
+
+    return state
+}
+
+@Composable
+fun rememberPreference(key: String, defaultValue: String): MutableState<String> {
+    val context = LocalContext.current
+    val preferences = context.preferences
+    val state = remember { mutableStateOf(preferences.getString(key, null) ?: defaultValue) }
+
+    DisposableEffect(key) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPrefs, changedKey ->
+            if (changedKey == key) {
+                state.value = sharedPrefs.getString(key, null) ?: defaultValue
+            }
+        }
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            preferences.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    LaunchedEffect(state.value) {
+        if (state.value != (preferences.getString(key, null) ?: defaultValue)) {
+            preferences.edit { putString(key, state.value) }
+        }
+    }
+
+    return state
+}
+
+@Composable
+fun rememberPreference(key: String, defaultValue: Float): MutableState<Float> {
+    val context = LocalContext.current
+    val preferences = context.preferences
+    val state = remember { mutableFloatStateOf(preferences.getFloat(key, defaultValue)) }
+
+    DisposableEffect(key) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPrefs, changedKey ->
+            if (changedKey == key) {
+                state.floatValue = sharedPrefs.getFloat(key, defaultValue)
+            }
+        }
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            preferences.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    LaunchedEffect(state.floatValue) {
+        if (state.floatValue != preferences.getFloat(key, defaultValue)) {
+            preferences.edit { putFloat(key, state.floatValue) }
+        }
+    }
+
+    return state
+}
+
+@Composable
+inline fun <reified T : Enum<T>> rememberPreference(key: String, defaultValue: T): MutableState<T> {
+    val context = LocalContext.current
+    val preferences = context.preferences
+    val state = remember { mutableStateOf(preferences.getEnum(key, defaultValue)) }
+
+    DisposableEffect(key) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPrefs, changedKey ->
+            if (changedKey == key) {
+                state.value = sharedPrefs.getEnum(key, defaultValue)
+            }
+        }
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            preferences.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    LaunchedEffect(state.value) {
+        if (state.value != preferences.getEnum(key, defaultValue)) {
+            preferences.edit { putEnum(key, state.value) }
+        }
+    }
+
+    return state
+}
