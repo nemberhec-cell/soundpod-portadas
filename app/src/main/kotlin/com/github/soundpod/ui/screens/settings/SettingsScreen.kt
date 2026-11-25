@@ -44,7 +44,8 @@ fun SettingsScreen(
         SettingsDestinations.MAIN -> stringResource(R.string.settings)
         SettingsDestinations.APPEARANCE -> stringResource(R.string.appearance)
         SettingsDestinations.BACKGROUND -> stringResource(R.string.player_background)
-        SettingsDestinations.HOME_BACKGROUND -> stringResource(R.string.home_background)
+        SettingsDestinations.HOME_BACKGROUND -> stringResource(R.string.home_background_only)
+        SettingsDestinations.LIST_BACKGROUND -> stringResource(R.string.list_background_only)
         SettingsDestinations.PLAYER -> stringResource(R.string.player)
         SettingsDestinations.PRIVACY -> stringResource(R.string.privacy)
         SettingsDestinations.BACKUP -> stringResource(R.string.backup_restore)
@@ -74,6 +75,7 @@ fun SettingsScreen(
 
                 SettingsDestinations.BACKGROUND -> BackgroundSettingsContent()
                 SettingsDestinations.HOME_BACKGROUND -> HomeBackgroundSettingsContent()
+                SettingsDestinations.LIST_BACKGROUND -> HomeBackgroundSettingsContent(forLists = true)
                 SettingsDestinations.PLAYER -> PlayerSettingsContent(
                     onSleepTimerClick = { onOptionClick(SettingsDestinations.SLEEP_TIMER) }
                 )
