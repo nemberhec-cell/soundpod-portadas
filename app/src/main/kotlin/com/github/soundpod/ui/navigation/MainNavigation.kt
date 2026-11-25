@@ -1,0 +1,234 @@
+@file:OptIn(
+    ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class,
+    ExperimentalAnimationApi::class
+)
+
+package com.github.soundpod.ui.navigation
+
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.SheetValue
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.Lifecycle
+import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.compose.runtime.getValue
+import androidx.navigation.navArgument
+import androidx.navigation.toRoute
+import com.github.soundpod.enums.BuiltInPlaylist
+import com.github.soundpod.ui.screens.album.AlbumScreen
+import com.github.soundpod.ui.screens.artist.ArtistScreen
+import com.github.soundpod.ui.screens.offline.OfflineScreen
+import com.github.soundpod.ui.screens.favorites.FavoriteTracksScreen
+import com.github.soundpod.ui.screens.favorites.FavoritesScreen
+import com.github.soundpod.ui.screens.home.style.AppleHome
+import com.github.soundpod.ui.screens.home.HistoryScreen
+import com.github.soundpod.ui.screens.home.style.SoundPodHome
+import com.github.soundpod.ui.screens.home.style.SamsungHome
+import com.github.soundpod.ui.screens.playlist.FavoritePlaylistScreen
+import com.github.soundpod.ui.screens.playlist.OnlinePlaylistScreen
+import com.github.soundpod.ui.screens.search.NewSearchLayout
+import com.github.soundpod.ui.screens.search.NewSearchResult
+import com.github.soundpod.utils.HomeStyle
+import com.github.soundpod.utils.rememberPreference
+import com.github.soundpod.utils.homeStyleKey
+import kotlinx.coroutines.launch
+import kotlin.reflect.KClass
+
+
+@UnstableApi
+@Composable
+fun MainNavigation(
+    navController: NavHostController,
+    sheetState: SheetState,
+    onNavigateToSettings: () -> Unit
+) {
+    val scope = rememberCoroutineScope()
+
+    NavHost(
+        navController = navController,
+        startDestination = Routes.Home,
+        enterTransition = { Transitions.enter() },
+        exitTransition = { Transitions.exit() },
+        popEnterTransition = { Transitions.popEnter() },
+        popExitTransition = { Transitions.popExit() }
+    ) {
+        val navigateToAlbum = { browseId: String ->
+            navController.navigate(route = Routes.Album(id = browseId)) {
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+
+        val navigateToArtist = { browseId: String ->
+            navController.navigate(route = Routes.Artist(id = browseId)) {
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+
+        val popDestination = {
+            if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED)
+                navController.popBackStack()
+        }
+
+        fun <T : Any> NavGraphBuilder.playerComposable(
+            route: KClass<T>,
+            content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit
+        ) {
+            composable(route = route) { navBackStackEntry ->
+                content(navBackStackEntry)
+
+                BackHandler(enabled = sheetState.currentValue == SheetValue.Expanded) {
+                    scope.launch {
+                        sheetState.partialExpand()
+                    }
+                }
+            }
+        }
+
+        playerComposable(route = Routes.Home::class) {
+            val homeStyle by rememberPreference(homeStyleKey, HomeStyle.SoundPodHome)
+            when (homeStyle) {
+                HomeStyle.AppleHome -> AppleHome(
+                    navController = navController,
+                    onSettingsClick = onNavigateToSettings
+                )
+                HomeStyle.SamsungHome -> SamsungHome(
+                    navController = navController,
+                    onSettingsClick = onNavigateToSettings
+                )
+                HomeStyle.SoundPodHome -> SoundPodHome(
+                    navController = navController,
+                    onSettingsClick = onNavigateToSettings
+                )
+            }
+        }
+
+        composable(
+            route = "${Routes.SearchResult}/{query}/{type}",
+            arguments = listOf(
+                navArgument("query") { type = NavType.StringType },
+                navArgument("type") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val query = backStackEntry.arguments?.getString("query") ?: ""
+            val type = backStackEntry.arguments?.getString("type")
+
+            NewSearchResult(
+                navController = navController,
+                query = query,
+                resultType = type
+            )
+        }
+
+        playerComposable(route = Routes.Artist::class) { navBackStackEntry ->
+            val route: Routes.Artist = navBackStackEntry.toRoute()
+
+            ArtistScreen(
+                browseId = route.id,
+                onBack = { navController.popBackStack() },
+                onSearchClick = { navController.navigate(route = Routes.Search) },
+                onSettingsClick = onNavigateToSettings,
+                onAlbumClick = navigateToAlbum,
+                onArtistClick = navigateToArtist
+            )
+        }
+
+        playerComposable(route = Routes.Album::class) { navBackStackEntry ->
+            val route: Routes.Album = navBackStackEntry.toRoute()
+
+            AlbumScreen(
+                browseId = route.id,
+                onGoToArtist = navigateToArtist,
+                onSearchClick = { navController.navigate(route = Routes.Search) },
+                onSettingsClick = onNavigateToSettings,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        playerComposable(route = Routes.Playlist::class) { navBackStackEntry ->
+            val route: Routes.Playlist = navBackStackEntry.toRoute()
+
+            OnlinePlaylistScreen(
+                browseId = route.id,
+                onBack = popDestination,
+                onGoToAlbum = navigateToAlbum,
+                onGoToArtist = navigateToArtist
+            )
+        }
+
+        playerComposable(route = Routes.Search::class) {
+            NewSearchLayout(
+                initialTextInput = "",
+                navController = navController,
+                onAlbumClick = navigateToAlbum,
+                onArtistClick = navigateToArtist,
+                onPlaylistClick = { browseId ->
+                    navController.navigate(route = Routes.Playlist(id = browseId))
+                }
+            )
+        }
+
+        composable(route = Routes.BuiltInPlaylist::class) { navBackStackEntry ->
+            val route: Routes.BuiltInPlaylist = navBackStackEntry.toRoute()
+
+            OfflineScreen(
+                builtInPlaylist = BuiltInPlaylist.entries[route.index],
+                pop = popDestination,
+                onGoToAlbum = navigateToAlbum,
+                onGoToArtist = navigateToArtist,
+                onSearchClick = { navController.navigate(route = Routes.Search) },
+                onSettingsClick = onNavigateToSettings
+            )
+        }
+
+        composable(route = Routes.LocalPlaylist::class) { navBackStackEntry ->
+            val route: Routes.LocalPlaylist = navBackStackEntry.toRoute()
+
+            FavoritePlaylistScreen(
+                playlistId = route.id,
+                pop = popDestination,
+                onGoToAlbum = navigateToAlbum,
+                onGoToArtist = navigateToArtist,
+                onSearchClick = { navController.navigate(route = Routes.Search) },
+                onSettingsClick = onNavigateToSettings
+            )
+        }
+
+        playerComposable(route = Routes.Favorites::class) {
+            FavoritesScreen(
+                onBackClick = { navController.popBackStack() },
+                onFavoriteTracksClick = { navController.navigate(route = Routes.FavoriteTracks) },
+                onGoToAlbum = navigateToAlbum,
+                onGoToArtist = navigateToArtist
+            )
+        }
+
+        playerComposable(route = Routes.FavoriteTracks::class) {
+            FavoriteTracksScreen(
+                onBackClick = { navController.popBackStack() },
+                onGoToAlbum = navigateToAlbum,
+                onGoToArtist = navigateToArtist
+            )
+        }
+
+        playerComposable(route = Routes.History::class) {
+            HistoryScreen(
+                onBackClick = { navController.popBackStack() },
+                onGoToAlbum = navigateToAlbum,
+                onGoToArtist = navigateToArtist
+            )
+        }
+    }
+}
