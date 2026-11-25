@@ -25,21 +25,35 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Step 1 of the user's personalization plan: a photo background for the
- * main (home) screen, chosen from the phone gallery.
+ * Step 1 (v2) of the user's personalization plan: a photo background for the
+ * main (home) screen, in two layers:
  *
- * The chosen photo is stored with [HOME_BACKGROUND_PHOTO_KEY]; the
- * [HOME_BACKGROUND_DIM_KEY] preference (0..100, default 55) sets how much
- * the app's own background color is blended over the photo so the text
- * and cards stay readable.
+ *  - [HOME_BACKGROUND_PHOTO_KEY] ("back layer", the app's dark background
+ *    around the content card), and
+ *  - [HOME_FRONT_PHOTO_KEY] ("front layer", the content card itself).
+ *
+ * Each layer has its own dim preference (0..100, default 55) that blends the
+ * app background color over the photo so text stays readable.
  */
 const val HOME_BACKGROUND_PHOTO_KEY = "home_background_photo_file"
 const val HOME_BACKGROUND_DIM_KEY = "home_background_dim"
+const val HOME_FRONT_PHOTO_KEY = "home_front_photo_file"
+const val HOME_FRONT_DIM_KEY = "home_front_dim"
 
 private const val HOME_BACKGROUND_ITEM_KEY = "home_background"
+private const val HOME_FRONT_ITEM_KEY = "home_front"
+
+/** Wallpaper chooser state for one layer. */
+class HomePhotoPicker(
+    val photo: String,
+    val pick: () -> Unit,
+    val remove: () -> Unit,
+    val dim: Int,
+    val setDim: (Int) -> Unit
+)
 
 /**
- * Full-screen photo background behind the home screen content.
+ * Full-screen photo background behind the home screen content (back layer).
  * Does nothing when no photo has been chosen (or the file is gone).
  */
 @Composable
@@ -68,16 +82,36 @@ fun HomePhotoBackground() {
 }
 
 /**
- * Opens the system photo picker and saves the chosen image as the home
- * background, replacing (and deleting) the previous one.
+ * Photo shown inside the front content card of the home screen.
+ * Returns the photo file name, or null when the layer is unset.
+ */
+@Composable
+fun rememberHomeFrontPhoto(): String? {
+    val customPhotoFile by rememberPreference(HOME_FRONT_PHOTO_KEY, "")
+    val context = LocalContext.current
+    val file = customPhotoFile.takeIf { it.isNotBlank() }?.let {
+        CustomArtworkStore.fileFor(context, it)
+    }
+    return if (file != null && file.exists()) customPhotoFile else null
+}
+
+/** Dim used over the front photo layer. */
+@Composable
+fun rememberHomeFrontDim(): Int {
+    val dimPercent by rememberPreference(HOME_FRONT_DIM_KEY, 55)
+    return dimPercent.coerceIn(0, 100)
+}
+
+/**
+ * Opens the system photo picker and saves the chosen image under the given
+ * preference key, replacing (and deleting) the previous one.
  * Call the returned lambda from a click handler.
  */
 @Composable
-fun rememberHomeBackgroundPicker(): () -> Unit {
+private fun rememberPhotoPickerFor(prefKey: String, itemKey: String): () -> Unit {
     val context = LocalContext.current
-    val prefs = context.preferences
     val scope = rememberCoroutineScope()
-    var currentFile by rememberPreference(HOME_BACKGROUND_PHOTO_KEY, "")
+    var currentFile by rememberPreference(prefKey, "")
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -85,7 +119,7 @@ fun rememberHomeBackgroundPicker(): () -> Unit {
         if (uri == null) return@rememberLauncherForActivityResult
         scope.launch {
             val fileName = withContext(Dispatchers.IO) {
-                CustomArtworkStore.copyPickedImage(context, uri, HOME_BACKGROUND_ITEM_KEY)
+                CustomArtworkStore.copyPickedImage(context, uri, itemKey)
             }
             if (fileName == null) {
                 toastCoverFailed(context)
@@ -102,12 +136,54 @@ fun rememberHomeBackgroundPicker(): () -> Unit {
     return { launcher.launch("image/*") }
 }
 
-/** Removes the home background photo. */
-fun removeHomeBackgroundPhoto(context: android.content.Context) {
+/** Removes the photo stored under [prefKey]. */
+fun removePhotoFor(context: android.content.Context, prefKey: String) {
     val prefs = context.preferences
-    val previous = prefs.getString(HOME_BACKGROUND_PHOTO_KEY, "") ?: ""
-    prefs.edit { putString(HOME_BACKGROUND_PHOTO_KEY, "") }
+    val previous = prefs.getString(prefKey, "") ?: ""
+    prefs.edit { putString(prefKey, "") }
     if (previous.isNotBlank()) {
         CustomArtworkStore.delete(context, previous)
     }
+}
+
+/** Picker + dim controls for the back (main menu) layer. */
+@Composable
+fun rememberHomeBackgroundPicker(): HomePhotoPicker {
+    val pick = rememberPhotoPickerFor(HOME_BACKGROUND_PHOTO_KEY, HOME_BACKGROUND_ITEM_KEY)
+    val photo by rememberPreference(HOME_BACKGROUND_PHOTO_KEY, "")
+    var dim by rememberPreference(HOME_BACKGROUND_DIM_KEY, 55)
+    val context = LocalContext.current
+    return HomePhotoPicker(
+        photo = photo,
+        pick = pick,
+        remove = {
+            removePhotoFor(context, HOME_BACKGROUND_PHOTO_KEY)
+        },
+        dim = dim,
+        setDim = {
+            dim = it
+            context.preferences.edit { putInt(HOME_BACKGROUND_DIM_KEY, it) }
+        }
+    )
+}
+
+/** Picker + dim controls for the front (content card) layer. */
+@Composable
+fun rememberHomeFrontPicker(): HomePhotoPicker {
+    val pick = rememberPhotoPickerFor(HOME_FRONT_PHOTO_KEY, HOME_FRONT_ITEM_KEY)
+    val photo by rememberPreference(HOME_FRONT_PHOTO_KEY, "")
+    var dim by rememberPreference(HOME_FRONT_DIM_KEY, 55)
+    val context = LocalContext.current
+    return HomePhotoPicker(
+        photo = photo,
+        pick = pick,
+        remove = {
+            removePhotoFor(context, HOME_FRONT_PHOTO_KEY)
+        },
+        dim = dim,
+        setDim = {
+            dim = it
+            context.preferences.edit { putInt(HOME_FRONT_DIM_KEY, it) }
+        }
+    )
 }
