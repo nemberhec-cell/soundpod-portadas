@@ -19,6 +19,8 @@ import com.github.soundpod.R
 import com.github.soundpod.ui.appearance.HomePhotoPicker
 import com.github.soundpod.ui.appearance.rememberHomeBackgroundPicker
 import com.github.soundpod.ui.appearance.rememberHomeFrontPicker
+import com.github.soundpod.ui.appearance.rememberListBackgroundPicker
+import com.github.soundpod.ui.appearance.rememberListFrontPicker
 import com.github.soundpod.ui.common.IconSource
 import com.github.soundpod.ui.screens.settings.SettingsColumn
 import com.github.soundpod.ui.screens.settings.SettingsGroup
@@ -33,6 +35,8 @@ import com.github.soundpod.ui.screens.settings.SettingsGroup
 fun HomeBackgroundSettingsContent() {
     val backPicker = rememberHomeBackgroundPicker()
     val frontPicker = rememberHomeFrontPicker()
+    val listBackPicker = rememberListBackgroundPicker()
+    val listFrontPicker = rememberListFrontPicker()
 
     Column {
         SettingsGroup(
@@ -54,6 +58,30 @@ fun HomeBackgroundSettingsContent() {
                 title = stringResource(id = R.string.home_front_layer_photo),
                 description = stringResource(id = R.string.home_front_layer_description),
                 picker = frontPicker
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        SettingsGroup(
+            title = stringResource(id = R.string.list_background)
+        ) {
+            LayerSettings(
+                title = stringResource(id = R.string.list_back_layer),
+                description = stringResource(id = R.string.list_back_layer_description),
+                picker = listBackPicker
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        SettingsGroup(
+            title = stringResource(id = R.string.list_front_layer)
+        ) {
+            LayerSettings(
+                title = stringResource(id = R.string.list_front_layer_photo),
+                description = stringResource(id = R.string.list_front_layer_description),
+                picker = listFrontPicker
             )
         }
 
