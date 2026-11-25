@@ -318,6 +318,13 @@
     <string name="my_photo_description">Use one of your own photos as the player background</string>
     <string name="choose_photo">Choose a photo</string>
     <string name="remove_photo">Remove photo</string>
+    <string name="home_background">Home background</string>
+    <string name="home_background_description">Use one of your own photos as the background of the main menu</string>
+    <string name="home_background_photo">Home photo</string>
+    <string name="home_background_photo_description">Your photo appears behind the whole main menu</string>
+    <string name="background_dim">Background dim</string>
+    <string name="background_dim_description">How much the app color covers your photo (higher = more readable text)</string>
+    <string name="customize_background">Customize background</string>
     <string name="presets">Presets</string>
     <string name="allowed">Allowed</string>
     <string name="denied">Denied</string>
