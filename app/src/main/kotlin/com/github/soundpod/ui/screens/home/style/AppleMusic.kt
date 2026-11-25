@@ -64,13 +64,13 @@ import com.github.soundpod.utils.appearanceUpdatedKey
 import com.github.soundpod.utils.rememberPreference
 import com.github.soundpod.utils.updateAvailableKey
 import com.github.soundpod.ui.appearance.HomePhotoBackground
-import com.github.soundpod.ui.appearance.rememberHomeBackgroundPicker
 import kotlin.math.roundToInt
 
 @Composable
 fun AppleHome(
     navController: NavController,
     onSettingsClick: () -> Unit,
+    onHomeBackgroundClick: () -> Unit = {},
 ) {
     val updateAvailable by rememberPreference(updateAvailableKey, false)
     val appearanceUpdated by rememberPreference(appearanceUpdatedKey, false)
@@ -85,7 +85,6 @@ fun AppleHome(
 
     val (colorPalette) = LocalAppearance.current
 
-    val homeBackgroundPicker = rememberHomeBackgroundPicker()
 
     val density = LocalDensity.current
     val headerHeight = 64.dp
@@ -195,7 +194,7 @@ fun AppleHome(
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             OutlinedIconButton(
-                                onClick = homeBackgroundPicker.pick,
+                                onClick = onHomeBackgroundClick,
                                 border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.5f)),
                                 modifier = Modifier.size(36.dp)
                             ) {
