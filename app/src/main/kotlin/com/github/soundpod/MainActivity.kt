@@ -216,6 +216,12 @@ class MainActivity : ComponentActivity() {
                                 onNavigateToSettings = {
                                     val intent = Intent(context, SettingsActivity::class.java)
                                     context.startActivity(intent)
+                                },
+                                onNavigateToHomeBackground = {
+                                    val intent = Intent(context, SettingsActivity::class.java).apply {
+                                        putExtra("SCREEN_ID", SettingsDestinations.HOME_BACKGROUND)
+                                    }
+                                    context.startActivity(intent)
                                 }
                             )
                         }
