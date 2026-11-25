@@ -25,7 +25,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.flow.flowOf
 import com.github.soundpod.LocalPlayerPadding
-import com.github.soundpod.ui.appearance.HomePhotoBackground
 import com.github.soundpod.LocalPlayerServiceBinder
 import com.github.soundpod.R
 import com.github.soundpod.db
@@ -91,7 +90,6 @@ fun HomePlaylists(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        HomePhotoBackground()
             LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 150.dp),
         contentPadding = PaddingValues(
