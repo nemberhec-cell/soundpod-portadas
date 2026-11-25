@@ -131,6 +131,7 @@ fun HomePlaylists(
                 modifier = Modifier.animateItem(),
                 title = playlistPreview.playlist.name,
                 thumbnailUrls = playlistPreview.thumbnails.filterNotNull(),
+                customCoverItemKey = "playlist:${playlistPreview.id}",
                 subtitle = pluralStringResource(
                     id = R.plurals.number_of_songs,
                     count = playlistPreview.songCount,
