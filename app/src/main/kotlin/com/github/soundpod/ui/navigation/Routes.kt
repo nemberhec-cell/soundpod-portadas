@@ -49,6 +49,7 @@ object SettingsDestinations {
     const val APPEARANCE = "settings_appearance"
     const val BACKGROUND = "background"
     const val HOME_BACKGROUND = "home_background"
+    const val LIST_BACKGROUND = "list_background"
     const val PLAYER = "settings_player"
     const val PRIVACY = "settings_privacy"
     const val BACKUP = "settings_backup"
