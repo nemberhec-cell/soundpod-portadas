@@ -54,7 +54,6 @@ import com.github.soundpod.utils.appearanceUpdatedKey
 import com.github.soundpod.utils.rememberPreference
 import com.github.soundpod.utils.updateAvailableKey
 import com.github.soundpod.ui.appearance.HomePhotoBackground
-import com.github.soundpod.ui.appearance.rememberHomeBackgroundPicker
 import com.github.soundpod.ui.appearance.rememberHomeFrontDim
 import com.github.soundpod.ui.appearance.rememberHomeFrontPhoto
 
@@ -62,6 +61,7 @@ import com.github.soundpod.ui.appearance.rememberHomeFrontPhoto
 fun SamsungHome(
     navController: NavController,
     onSettingsClick: () -> Unit,
+    onHomeBackgroundClick: () -> Unit = {},
 ) {
     val updateAvailable by rememberPreference(updateAvailableKey, false)
     val appearanceUpdated by rememberPreference(appearanceUpdatedKey, false)
@@ -82,7 +82,6 @@ fun SamsungHome(
 
     val (colorPalette) = LocalAppearance.current
 
-    val pickHomeBackground = rememberHomeBackgroundPicker()
     val frontPhoto = rememberHomeFrontPhoto()
     val frontDim = rememberHomeFrontDim()
 
@@ -122,7 +121,7 @@ fun SamsungHome(
                 )
             }
             OutlinedIconButton(
-                onClick = pickHomeBackground.pick,
+                onClick = onHomeBackgroundClick,
                 border = BorderStroke(1.dp, Color.Gray)
             ) {
                 Icon(
