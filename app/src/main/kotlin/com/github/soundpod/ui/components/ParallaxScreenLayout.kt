@@ -46,6 +46,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
@@ -62,6 +65,11 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import com.github.core.ui.LocalAppearance
 import com.github.soundpod.LocalPlayerPadding
+import com.github.soundpod.customart.CustomPhotoBackground
+import com.github.soundpod.ui.appearance.ListPhotoBackground
+import com.github.soundpod.ui.appearance.rememberListBackgroundPhotoFile
+import com.github.soundpod.ui.appearance.rememberListFrontDim
+import com.github.soundpod.ui.appearance.rememberListFrontPhoto
 import com.github.soundpod.R
 import com.github.soundpod.utils.isLandscape
 import kotlinx.coroutines.launch
@@ -77,6 +85,7 @@ fun ParallaxScreenLayout(
     isLoading: Boolean = false,
     thumbnailUrl: String? = null,
     thumbnailItemKey: String? = null,
+    onThumbnailClick: (() -> Unit)? = null,
     footerHeaderContent: @Composable (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
     onBackClick: (() -> Unit)? = null,
@@ -90,11 +99,18 @@ fun ParallaxScreenLayout(
     val landscape = isLandscape
 
     val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(this).toDp() }
+
+    // List layers (playlists, albums, artists): independent back/front photos.
+    val listBackPhoto = rememberListBackgroundPhotoFile()
+    val listFrontPhoto = rememberListFrontPhoto()
+    val listFrontDim = rememberListFrontDim()
+    val hasListBackPhoto = listBackPhoto != null
+    val hasListFrontPhoto = listFrontPhoto != null
     val topBarHeight = remember(statusBarHeight) { 64.dp + statusBarHeight }
     val topBarHeightPx = with(density) { remember(topBarHeight) { topBarHeight.toPx() } }
 
     Scaffold(
-        containerColor = colorPalette.background4,
+        containerColor = if (hasListBackPhoto) Color.Transparent else colorPalette.background4,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { innerPadding ->
         val playerPadding = LocalPlayerPadding.current
@@ -104,6 +120,10 @@ fun ParallaxScreenLayout(
                 .fillMaxSize()
                 .padding(bottom = innerPadding.calculateBottomPadding() + playerPadding),
         ) {
+            // Back layer photo behind the whole list screen.
+            if (hasListBackPhoto) {
+                ListPhotoBackground()
+            }
             val fullHeightPx = constraints.maxHeight.toFloat()
             // Dynamic peek height: approximately 45% of screen height, but with sensible bounds
             val peekHeightPx = remember(fullHeightPx, landscape) {
@@ -249,12 +269,24 @@ fun ParallaxScreenLayout(
                             translationY = (sheetOffset - peekHeightPx) * 0.5f
                         }
                 ) {
-                    AdaptiveThumbnail(
-                        isLoading = isLoading,
-                        url = thumbnailUrl,
-                        itemKey = thumbnailItemKey,
-                        modifier = Modifier.fillMaxWidth(0.55f)
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.55f)
+                            .then(
+                                if (onThumbnailClick != null) {
+                                    Modifier.clickable(onClick = onThumbnailClick)
+                                } else {
+                                    Modifier
+                                }
+                            )
+                    ) {
+                        AdaptiveThumbnail(
+                            isLoading = isLoading,
+                            url = thumbnailUrl,
+                            itemKey = thumbnailItemKey,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                     Text(
                         text = headerTitle ?: "",
                         style = typography.titleMedium.copy(fontWeight = FontWeight.Normal),
@@ -282,12 +314,33 @@ fun ParallaxScreenLayout(
                             this.shape = shape
                             clip = true
                         },
-                    color = colorPalette.mainBackground,
+                    color = if (hasListFrontPhoto) Color.Transparent else colorPalette.mainBackground,
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        content()
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        // Front layer photo inside the content sheet.
+                        if (hasListFrontPhoto) {
+                            CustomPhotoBackground(
+                                fileName = listFrontPhoto,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                            val frontScrimAlpha = listFrontDim.coerceIn(0, 100) / 100f
+                            val frontScrim = colorPalette.mainBackground
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            0f to frontScrim.copy(alpha = frontScrimAlpha),
+                                            1f to frontScrim.copy(alpha = frontScrimAlpha)
+                                        )
+                                    )
+                            )
+                        }
+                        Column(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            content()
+                        }
                     }
                 }
             }
