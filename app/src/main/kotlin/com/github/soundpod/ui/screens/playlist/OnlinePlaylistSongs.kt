@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import com.github.innertube.Innertube
 import com.github.soundpod.LocalPlayerPadding
+import com.github.soundpod.ui.appearance.HomePhotoBackground
 import com.github.soundpod.LocalPlayerServiceBinder
 import com.github.soundpod.R
 import com.github.soundpod.models.ActionInfo
@@ -51,7 +52,9 @@ fun OnlinePlaylistSongs(
         }
     }
 
-    LazyColumn(
+    Box(modifier = Modifier.fillMaxSize()) {
+        HomePhotoBackground()
+            LazyColumn(
         contentPadding = PaddingValues(top = 12.dp, bottom = 16.dp + playerPadding),
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -112,5 +115,6 @@ fun OnlinePlaylistSongs(
                 }
             }
         }
+    }
     }
 }
