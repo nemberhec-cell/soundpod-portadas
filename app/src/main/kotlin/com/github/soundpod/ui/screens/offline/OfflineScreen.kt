@@ -39,6 +39,8 @@ import com.github.soundpod.enums.SortOrder
 import com.github.soundpod.models.Song
 import com.github.soundpod.query
 import com.github.soundpod.ui.components.SettingsCard
+import com.github.soundpod.ui.appearance.rememberHomeFrontDim
+import com.github.soundpod.ui.appearance.rememberHomeFrontPhoto
 import com.github.soundpod.ui.components.StaticScreenLayout
 import com.github.soundpod.utils.rememberPreference
 import com.github.soundpod.utils.songSortByKey
@@ -58,6 +60,8 @@ fun OfflineScreen(
 ) {
     val (colorPalette) = LocalAppearance.current
     val binder = LocalPlayerServiceBinder.current
+    val frontPhoto = rememberHomeFrontPhoto()
+    val frontDim = rememberHomeFrontDim()
 
     var isEditMode by remember { mutableStateOf(false) }
     var selectedUids by remember { mutableStateOf(emptySet<String>()) }
@@ -201,6 +205,8 @@ fun OfflineScreen(
         }
     ) {
             SettingsCard(
+            backgroundPhoto = frontPhoto,
+            backgroundDim = frontDim,
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f),
