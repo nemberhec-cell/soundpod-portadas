@@ -753,10 +753,7 @@ interface Database {
     ],
     views = [SortedSongPlaylistMap::class],
     version = 29,
-    // Set to false in this fork so the committed 29.json (reference copy) does not
-    // fail the build on identity-hash mismatch; re-enable after the first build
-    // regenerates it.
-    exportSchema = false,
+    exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
