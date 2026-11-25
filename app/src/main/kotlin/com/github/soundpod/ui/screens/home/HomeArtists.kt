@@ -3,6 +3,7 @@ package com.github.soundpod.ui.screens.home
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.soundpod.LocalPlayerPadding
+import com.github.soundpod.ui.appearance.HomePhotoBackground
 import com.github.soundpod.enums.ArtistSortBy
 import com.github.soundpod.enums.SortOrder
 import com.github.soundpod.models.Artist
@@ -46,7 +48,9 @@ fun HomeArtistList(
             sortOrder = sortOrder
         )
     }
-    LazyVerticalGrid(
+    Box(modifier = Modifier.fillMaxSize()) {
+        HomePhotoBackground()
+            LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 100.dp),
         contentPadding = PaddingValues(
             top = 12.dp,
@@ -75,5 +79,6 @@ fun HomeArtistList(
                 onClick = { onArtistClick(artist) }
             )
         }
+    }
     }
 }
