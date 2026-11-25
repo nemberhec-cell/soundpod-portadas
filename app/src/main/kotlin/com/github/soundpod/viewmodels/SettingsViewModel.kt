@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Storage
@@ -46,6 +47,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                     listOf(
                         SettingOption(title = R.string.appearance, icon = Icons.Default.ColorLens, screenId = SettingsDestinations.APPEARANCE),
                         SettingOption(title = R.string.player, icon = Icons.Default.PlayArrow, screenId = SettingsDestinations.PLAYER)
+                        SettingOption(title = R.string.home_background, icon = Icons.Default.Photo, screenId = SettingsDestinations.HOME_BACKGROUND)
                     )
                 ),
                 SettingsSection(
