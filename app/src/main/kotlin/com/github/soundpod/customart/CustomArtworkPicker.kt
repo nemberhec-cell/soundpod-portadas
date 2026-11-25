@@ -21,7 +21,7 @@ import java.io.File
 
 /**
  * In-app photo picker flow, 100% from inside the app:
- * 1. opens the system photo picker (no storage permission needed, "image/*"),
+ * 1. opens the system photo picker (no storage permission needed),
  * 2. copies the chosen photo into private storage (filesDir/custom_artwork),
  * 3. saves itemKey -> photo in the database.
  * [onDone] runs after saving so the UI can refresh.
