@@ -27,6 +27,8 @@ import com.github.soundpod.ui.components.StaticScreenLayout
 import com.github.soundpod.ui.components.TextFieldDialog
 import com.github.soundpod.models.Song
 import com.github.soundpod.ui.components.SettingsCard
+import com.github.soundpod.ui.appearance.rememberHomeFrontDim
+import com.github.soundpod.ui.appearance.rememberHomeFrontPhoto
 import com.github.soundpod.utils.asMediaItem
 import com.github.soundpod.utils.forcePlayAtIndex
 import com.github.soundpod.utils.historySortByKey
@@ -45,6 +47,8 @@ fun HistoryScreen(
     viewModel: HistoryViewModel = viewModel()
 ) {
     val binder = LocalPlayerServiceBinder.current
+    val frontPhoto = rememberHomeFrontPhoto()
+    val frontDim = rememberHomeFrontDim()
 
     var isEditMode by remember { mutableStateOf(false) }
     var selectedUids by remember { mutableStateOf(emptySet<String>()) }
@@ -163,7 +167,10 @@ fun HistoryScreen(
         scrollable = false,
         horizontalPadding = 0.dp
     ) {
-        SettingsCard {
+        SettingsCard(
+            backgroundPhoto = frontPhoto,
+            backgroundDim = frontDim
+        ) {
             SongListContent(
                 songs = viewModel.historySongs,
                 sortBy = sortBy,
