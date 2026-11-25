@@ -17,6 +17,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import com.github.soundpod.ui.appearance.HomePhotoBackground
+import com.github.soundpod.ui.appearance.rememberHomeBackgroundPhotoFile
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -101,8 +103,20 @@ fun StaticScreenLayout(
     val scrollState = rememberScrollState()
     var showDropDown by remember { mutableStateOf(false) }
 
+    // Back layer (dark area) photo background for the home screen.
+    val homePhotoFile = rememberHomeBackgroundPhotoFile()
+    val hasHomePhoto = homePhotoFile != null
+    if (hasHomePhoto) {
+        // drawn first so it sits behind the Scaffold
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (hasHomePhoto) {
+            HomePhotoBackground()
+        }
+
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = if (hasHomePhoto) androidx.compose.ui.graphics.Color.Transparent else MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { title?.invoke() },
@@ -167,5 +181,6 @@ fun StaticScreenLayout(
         ) {
             content()
         }
+    }
     }
 }
