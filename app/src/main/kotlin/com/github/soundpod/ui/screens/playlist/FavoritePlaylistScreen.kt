@@ -32,6 +32,12 @@ import com.github.soundpod.query
 import com.github.soundpod.ui.components.ConfirmationDialog
 import com.github.soundpod.ui.components.ParallaxScreenLayout
 import com.github.soundpod.ui.components.TextFieldDialog
+import com.github.soundpod.customart.hasCustomArtwork
+import com.github.soundpod.customart.rememberCustomArtworkPicker
+import com.github.soundpod.customart.removeCustomArtwork
+import com.github.soundpod.customart.toastCoverFailed
+import com.github.soundpod.customart.toastCoverUpdated
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.flow.filterNotNull
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,7 +63,15 @@ fun FavoritePlaylistScreen(
     var isSearching by remember { mutableStateOf(false) }
 
     var songCount by remember { mutableIntStateOf(0) }
-    var thumbnailUrl: String? by remember { mutableStateOf(null) }
+    // No auto-cover: the playlist cover is only what the user sets.
+    val thumbnailUrl: String? = null
+    val context = LocalContext.current
+    val playlistCoverKey = "playlist:$playlistId"
+    val playlistHasCustomCover = hasCustomArtwork(playlistCoverKey)
+    val pickCover = rememberCustomArtworkPicker(
+        onDone = { toastCoverUpdated(context) },
+        onError = { toastCoverFailed(context) }
+    )
 
     LaunchedEffect(Unit) {
         db.playlist(playlistId).filterNotNull().collect { playlist = it }
@@ -69,11 +83,6 @@ fun FavoritePlaylistScreen(
         }
     }
 
-    LaunchedEffect(playlistId) {
-        db.playlistThumbnailUrls(playlistId).collect { urls ->
-            thumbnailUrl = urls.shuffled().firstOrNull()
-        }
-    }
 
     BackHandler(enabled = isEditMode || isSearching) {
         if (isSearching) {
@@ -143,6 +152,34 @@ fun FavoritePlaylistScreen(
             DropdownMenuItem(
                 text = {
                     Text(
+                        text = stringResource(id = R.string.change_cover),
+                        color = colorPalette.text,
+                        style = typography.bodyLarge
+                    )
+                },
+                onClick = {
+                    pickCover(playlistCoverKey)
+                    dismissMenu()
+                }
+            )
+            if (playlistHasCustomCover) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(id = R.string.reset_cover),
+                            color = colorPalette.text,
+                            style = typography.bodyLarge
+                        )
+                    },
+                    onClick = {
+                        removeCustomArtwork(context, playlistCoverKey)
+                        dismissMenu()
+                    }
+                )
+            }
+            DropdownMenuItem(
+                text = {
+                    Text(
                         text = stringResource(id = R.string.settings),
                         color = colorPalette.text,
                         style = typography.bodyLarge
@@ -156,6 +193,8 @@ fun FavoritePlaylistScreen(
         },
         isLoading = playlist == null,
         thumbnailUrl = thumbnailUrl,
+        thumbnailItemKey = playlistCoverKey,
+        onThumbnailClick = { pickCover(playlistCoverKey) },
         headerTitle = playlist?.name ?: "",
         content = {
             FavoritePlaylistSongs(
