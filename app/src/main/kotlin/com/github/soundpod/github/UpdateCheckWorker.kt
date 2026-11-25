@@ -1,0 +1,110 @@
+package com.github.soundpod.github
+
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.edit
+import androidx.work.CoroutineWorker
+import androidx.work.WorkerParameters
+import com.github.api.GitHub
+import com.github.soundpod.BuildConfig
+import com.github.soundpod.R
+import com.github.soundpod.SettingsActivity
+import com.github.soundpod.ui.common.showUpdateAlert
+import com.github.soundpod.ui.navigation.SettingsDestinations
+import com.github.soundpod.utils.preferences
+import com.github.soundpod.utils.updateAvailableKey
+import kotlinx.coroutines.flow.first
+
+class UpdateCheckWorker(
+    private val context: Context,
+    params: WorkerParameters
+) : CoroutineWorker(context, params) {
+
+    override suspend fun doWork(): Result {
+        if (!BuildConfig.ENABLE_UPDATER) {
+            return Result.success()
+        }
+
+        val isShowAlertEnabled = showUpdateAlert(context).first()
+
+        if (!isShowAlertEnabled) {
+            return Result.success()
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                return Result.failure()
+            }
+        }
+
+        return try {
+            val release = GitHub.getLastestRelease() ?: return Result.failure()
+
+            val latestVersionStr = release.tagName
+
+            val latestVersion = VersionUtils.extractVersion(latestVersionStr)
+
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            val currentVersion = packageInfo.versionName ?: "0"
+
+            if (VersionUtils.isNewerVersion(latestVersion, currentVersion)) {
+                context.preferences.edit { putBoolean(updateAvailableKey, true) }
+                sendNotification(latestVersion)
+            }
+
+            Result.success()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Result.retry()
+        }
+    }
+
+    private fun sendNotification(version: String) {
+        val channelId = "update_channel"
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                context.getString(R.string.update_channel_name),
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = context.getString(R.string.update_notification_description)
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+        val intent = Intent(context, SettingsActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("SCREEN_ID", SettingsDestinations.ABOUT)
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(R.drawable.app_icon)
+            .setContentTitle(context.getString(R.string.updates_available))
+            .setContentText(context.getString(R.string.update_ready, version))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+
+            NotificationManagerCompat.from(context).notify(1001, notification)
+        }
+    }
+}
