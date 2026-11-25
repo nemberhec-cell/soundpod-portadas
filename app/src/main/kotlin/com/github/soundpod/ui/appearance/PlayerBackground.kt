@@ -58,9 +58,9 @@ fun PlayerBackground(
         mutableStateOf(ColorClusters(fallbackColor, fallbackColor, fallbackColor, fallbackColor, fallbackColor, fallbackColor))
     }
     
-    val photoSource: Any? = remember(customPhotoFile) {
+    val photoSource: String? = remember(customPhotoFile) {
         customPhotoFile.takeIf { it.isNotBlank() }?.let {
-            java.io.File(context.filesDir, "custom_artwork/$it").takeIf { f -> f.exists() }
+            java.io.File(context.filesDir, "custom_artwork/$it").takeIf { f -> f.exists() }?.absolutePath
         }
     }
     LaunchedEffect(thumbnailUrl, colorPalette, photoSource) {
