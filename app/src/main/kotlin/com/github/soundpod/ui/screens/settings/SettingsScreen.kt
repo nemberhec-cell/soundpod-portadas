@@ -21,6 +21,7 @@ import com.github.soundpod.ui.screens.player.TrackDetails
 import com.github.soundpod.ui.screens.settings.subscreen.AboutSettingsContent
 import com.github.soundpod.ui.screens.settings.subscreen.AppearanceSettingsContent
 import com.github.soundpod.ui.screens.settings.subscreen.BackgroundSettingsContent
+import com.github.soundpod.ui.screens.settings.subscreen.HomeBackgroundSettingsContent
 import com.github.soundpod.ui.screens.settings.subscreen.BackupSettingsContent
 import com.github.soundpod.ui.screens.settings.subscreen.CacheSettingsContent
 import com.github.soundpod.ui.screens.settings.subscreen.DatabaseSettingsContent
@@ -43,6 +44,7 @@ fun SettingsScreen(
         SettingsDestinations.MAIN -> stringResource(R.string.settings)
         SettingsDestinations.APPEARANCE -> stringResource(R.string.appearance)
         SettingsDestinations.BACKGROUND -> stringResource(R.string.player_background)
+        SettingsDestinations.HOME_BACKGROUND -> stringResource(R.string.home_background)
         SettingsDestinations.PLAYER -> stringResource(R.string.player)
         SettingsDestinations.PRIVACY -> stringResource(R.string.privacy)
         SettingsDestinations.BACKUP -> stringResource(R.string.backup_restore)
@@ -71,6 +73,7 @@ fun SettingsScreen(
                 )
 
                 SettingsDestinations.BACKGROUND -> BackgroundSettingsContent()
+                SettingsDestinations.HOME_BACKGROUND -> HomeBackgroundSettingsContent()
                 SettingsDestinations.PLAYER -> PlayerSettingsContent(
                     onSleepTimerClick = { onOptionClick(SettingsDestinations.SLEEP_TIMER) }
                 )
