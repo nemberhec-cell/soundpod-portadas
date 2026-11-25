@@ -1,0 +1,130 @@
+package com.github.soundpod.ui.screens.settings
+
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.github.soundpod.R
+import com.github.soundpod.ui.common.IconSource
+import com.github.soundpod.ui.components.SettingsCard
+import com.github.soundpod.ui.components.StaticScreenLayout
+import com.github.soundpod.ui.navigation.SettingsDestinations
+import com.github.soundpod.ui.screens.player.AddToListScreen
+import com.github.soundpod.ui.screens.player.TrackDetails
+import com.github.soundpod.ui.screens.settings.subscreen.AboutSettingsContent
+import com.github.soundpod.ui.screens.settings.subscreen.AppearanceSettingsContent
+import com.github.soundpod.ui.screens.settings.subscreen.BackgroundSettingsContent
+import com.github.soundpod.ui.screens.settings.subscreen.BackupSettingsContent
+import com.github.soundpod.ui.screens.settings.subscreen.CacheSettingsContent
+import com.github.soundpod.ui.screens.settings.subscreen.DatabaseSettingsContent
+import com.github.soundpod.ui.screens.settings.subscreen.MoreSettingsContent
+import com.github.soundpod.ui.screens.settings.subscreen.PlayerSettingsContent
+import com.github.soundpod.ui.screens.settings.subscreen.PrivacySettingsContent
+import com.github.soundpod.ui.screens.settings.subscreen.QuickPicksSettingsContent
+import com.github.soundpod.ui.screens.settings.subscreen.SleepTimerSettingsContent
+import com.github.soundpod.utils.appearanceUpdatedKey
+import com.github.soundpod.utils.rememberPreference
+import com.github.soundpod.viewmodels.SettingsViewModel
+
+@Composable
+fun SettingsScreen(
+    screenId: String,
+    onBackClick: () -> Unit,
+    onOptionClick: (String) -> Unit
+) {
+    val title = when (screenId) {
+        SettingsDestinations.MAIN -> stringResource(R.string.settings)
+        SettingsDestinations.APPEARANCE -> stringResource(R.string.appearance)
+        SettingsDestinations.BACKGROUND -> stringResource(R.string.player_background)
+        SettingsDestinations.PLAYER -> stringResource(R.string.player)
+        SettingsDestinations.PRIVACY -> stringResource(R.string.privacy)
+        SettingsDestinations.BACKUP -> stringResource(R.string.backup_restore)
+        SettingsDestinations.DATABASE -> stringResource(R.string.database)
+        SettingsDestinations.MORE -> stringResource(R.string.more_settings)
+        SettingsDestinations.CACHE -> stringResource(R.string.cache)
+        SettingsDestinations.ABOUT -> stringResource(R.string.about)
+        SettingsDestinations.SLEEP_TIMER -> stringResource(R.string.sleep_timer)
+        SettingsDestinations.QUICK_PICKS -> stringResource(R.string.quick_picks)
+        SettingsDestinations.TRACK_DETAILS -> stringResource(R.string.track_details)
+        SettingsDestinations.ADD_TO_PLAYLIST -> stringResource(R.string.add_to_playlist)
+        else -> stringResource(R.string.settings)
+    }
+
+    StaticScreenLayout(
+        title = title,
+        shape = MaterialTheme.shapes.extraLarge,
+        onBackClick = onBackClick,
+        scrollable = screenId != SettingsDestinations.ADD_TO_PLAYLIST,
+        horizontalPadding = if (screenId == SettingsDestinations.ADD_TO_PLAYLIST) 0.dp else 14.dp,
+        content = {
+            when (screenId) {
+                SettingsDestinations.MAIN -> SettingsMainContent(onOptionClick)
+                SettingsDestinations.APPEARANCE -> AppearanceSettingsContent(
+                    onBackgroundClick = { onOptionClick(SettingsDestinations.BACKGROUND) }
+                )
+
+                SettingsDestinations.BACKGROUND -> BackgroundSettingsContent()
+                SettingsDestinations.PLAYER -> PlayerSettingsContent(
+                    onSleepTimerClick = { onOptionClick(SettingsDestinations.SLEEP_TIMER) }
+                )
+
+                SettingsDestinations.SLEEP_TIMER -> SleepTimerSettingsContent()
+                SettingsDestinations.PRIVACY -> PrivacySettingsContent()
+                SettingsDestinations.BACKUP -> BackupSettingsContent()
+                SettingsDestinations.DATABASE -> DatabaseSettingsContent(onOptionClick)
+                SettingsDestinations.CACHE -> CacheSettingsContent()
+                SettingsDestinations.MORE -> MoreSettingsContent()
+                SettingsDestinations.ABOUT -> AboutSettingsContent()
+                SettingsDestinations.QUICK_PICKS -> QuickPicksSettingsContent()
+                SettingsDestinations.TRACK_DETAILS -> TrackDetails()
+                SettingsDestinations.ADD_TO_PLAYLIST -> AddToListScreen()
+            }
+        }
+    )
+}
+
+@Composable
+fun SettingsMainContent(
+    onOptionClick: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = viewModel()
+) {
+    val sections by viewModel.sections.collectAsStateWithLifecycle()
+    val isAppearanceUpdated by rememberPreference(appearanceUpdatedKey, false)
+
+    Spacer(modifier = modifier.height(8.dp))
+
+    sections.forEach { section ->
+        SettingsCard {
+            section.options.forEach { option ->
+                val showBadge = option.screenId == SettingsDestinations.APPEARANCE && isAppearanceUpdated
+                if (option.icon != null) {
+                    SettingRow(
+                        title = stringResource(id = option.title),
+                        icon = IconSource.Vector(option.icon),
+                        showBadge = showBadge,
+                        onClick = { onOptionClick(option.screenId) }
+                    )
+                } else {
+                    option.iconRes?.let { iconResId ->
+                        SettingRow(
+                            title = stringResource(id = option.title),
+                            icon = IconSource.Icon(painterResource(iconResId)),
+                            showBadge = showBadge,
+                            onClick = { onOptionClick(option.screenId) }
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+    }
+}
