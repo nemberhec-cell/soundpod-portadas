@@ -329,6 +329,12 @@
     <string name="home_front_layer_photo">Front photo</string>
     <string name="home_front_layer_description">Your photo appears inside the content card of the main menu</string>
     <string name="home_back_layer">Back (dark background)</string>
+    <string name="list_background">List background</string>
+    <string name="list_back_layer">List back (dark background)</string>
+    <string name="list_back_layer_description">Your photo appears behind playlists, albums and artists</string>
+    <string name="list_front_layer">List front (content sheet)</string>
+    <string name="list_front_layer_photo">List front photo</string>
+    <string name="list_front_layer_description">Your photo appears inside the lists content</string>
     <string name="home_back_layer_description">Your photo appears behind the whole main menu</string>
     <string name="presets">Presets</string>
     <string name="allowed">Allowed</string>
