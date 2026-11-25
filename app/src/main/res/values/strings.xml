@@ -325,6 +325,9 @@
     <string name="background_dim">Background dim</string>
     <string name="background_dim_description">How much the app color covers your photo (higher = more readable text)</string>
     <string name="customize_background">Customize background</string>
+    <string name="customize_list_background">Customize list background</string>
+    <string name="home_background_only">Home background (main menu)</string>
+    <string name="list_background_only">List background (playlists, albums, artists)</string>
     <string name="home_front_layer">Front (gray card)</string>
     <string name="home_front_layer_photo">Front photo</string>
     <string name="home_front_layer_description">Your photo appears inside the content card of the main menu</string>
