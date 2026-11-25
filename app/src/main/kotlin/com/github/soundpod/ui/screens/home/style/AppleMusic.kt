@@ -85,7 +85,7 @@ fun AppleHome(
 
     val (colorPalette) = LocalAppearance.current
 
-    val pickHomeBackground = rememberHomeBackgroundPicker()
+    val homeBackgroundPicker = rememberHomeBackgroundPicker()
 
     val density = LocalDensity.current
     val headerHeight = 64.dp
@@ -195,7 +195,7 @@ fun AppleHome(
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             OutlinedIconButton(
-                                onClick = pickHomeBackground,
+                                onClick = homeBackgroundPicker.pick,
                                 border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.5f)),
                                 modifier = Modifier.size(36.dp)
                             ) {
