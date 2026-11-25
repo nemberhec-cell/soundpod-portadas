@@ -17,6 +17,8 @@ import com.github.soundpod.models.LocalMenuState
 import com.github.soundpod.models.Song
 import com.github.soundpod.ui.components.InHistoryMediaItemMenu
 import com.github.soundpod.ui.components.SettingsCard
+import com.github.soundpod.ui.appearance.rememberHomeFrontDim
+import com.github.soundpod.ui.appearance.rememberHomeFrontPhoto
 import com.github.soundpod.ui.components.StaticScreenLayout
 import com.github.soundpod.ui.components.SortingHeader
 import com.github.soundpod.ui.items.LocalSongItem
@@ -36,6 +38,8 @@ fun FavoriteTracksScreen(
     val binder = LocalPlayerServiceBinder.current
     val menuState = LocalMenuState.current
     val playerPadding = LocalPlayerPadding.current
+    val frontPhoto = rememberHomeFrontPhoto()
+    val frontDim = rememberHomeFrontDim()
     val songs = viewModel.favoriteSongs
 
     StaticScreenLayout(
@@ -44,7 +48,10 @@ fun FavoriteTracksScreen(
         scrollable = false,
         horizontalPadding = 0.dp
     ) {
-        SettingsCard {
+        SettingsCard(
+            backgroundPhoto = frontPhoto,
+            backgroundDim = frontDim
+        ) {
             LazyColumn(
                 contentPadding = PaddingValues(top = 12.dp, bottom = playerPadding + 16.dp),
                 modifier = Modifier.fillMaxSize()
