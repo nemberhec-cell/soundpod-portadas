@@ -46,6 +46,11 @@ import com.github.soundpod.utils.asMediaItem
 import com.github.soundpod.utils.completed
 import com.github.soundpod.utils.isScreenCacheEnabledKey
 import com.github.soundpod.utils.preferences
+import com.github.soundpod.customart.hasCustomArtwork
+import com.github.soundpod.customart.rememberCustomArtworkPicker
+import com.github.soundpod.customart.removeCustomArtwork
+import com.github.soundpod.customart.toastCoverFailed
+import com.github.soundpod.customart.toastCoverUpdated
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -67,6 +72,12 @@ fun OnlinePlaylistScreen(
     var isImportingPlaylist by rememberSaveable { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
+    val playlistCoverKey = "playlist:$browseId"
+    val playlistHasCustomCover = hasCustomArtwork(playlistCoverKey)
+    val pickCover = rememberCustomArtworkPicker(
+        onDone = { toastCoverUpdated(context) },
+        onError = { toastCoverFailed(context) }
+    )
 
     LaunchedEffect(browseId) {
         db.playlist(browseId).collect { localPlaylist = it }
@@ -203,6 +214,34 @@ fun OnlinePlaylistScreen(
             DropdownMenuItem(
                 text = {
                     Text(
+                        text = stringResource(id = R.string.change_cover),
+                        color = colorPalette.text,
+                        style = typography.bodyLarge
+                    )
+                },
+                onClick = {
+                    pickCover(playlistCoverKey)
+                    dismissMenu()
+                }
+            )
+            if (playlistHasCustomCover) {
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(id = R.string.reset_cover),
+                            color = colorPalette.text,
+                            style = typography.bodyLarge
+                        )
+                    },
+                    onClick = {
+                        removeCustomArtwork(context, playlistCoverKey)
+                        dismissMenu()
+                    }
+                )
+            }
+            DropdownMenuItem(
+                text = {
+                    Text(
                         text = stringResource(id = R.string.share),
                         color = colorPalette.text,
                         style = typography.bodyLarge
@@ -227,6 +266,8 @@ fun OnlinePlaylistScreen(
         },
         isLoading = playlistPage == null,
         thumbnailUrl = playlistPage?.thumbnail?.url,
+        thumbnailItemKey = playlistCoverKey,
+        onThumbnailClick = { pickCover(playlistCoverKey) },
         headerTitle = playlistPage?.title.orEmpty(),
         content = {
             OnlinePlaylistSongs(
