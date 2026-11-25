@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -62,6 +63,8 @@ import com.github.soundpod.ui.screens.home.QuickPicks
 import com.github.soundpod.utils.appearanceUpdatedKey
 import com.github.soundpod.utils.rememberPreference
 import com.github.soundpod.utils.updateAvailableKey
+import com.github.soundpod.ui.appearance.HomePhotoBackground
+import com.github.soundpod.ui.appearance.rememberHomeBackgroundPicker
 import kotlin.math.roundToInt
 
 @Composable
@@ -81,6 +84,8 @@ fun AppleHome(
     }
 
     val (colorPalette) = LocalAppearance.current
+
+    val pickHomeBackground = rememberHomeBackgroundPicker()
 
     val density = LocalDensity.current
     val headerHeight = 64.dp
@@ -124,6 +129,7 @@ fun AppleHome(
             .fillMaxSize()
             .background(colorPalette.background0)
     ) {
+        HomePhotoBackground()
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -185,6 +191,19 @@ fun AppleHome(
                                     text = stringResource(R.string.search),
                                     color = colorPalette.text,
                                     style = typography.bodyMedium
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            OutlinedIconButton(
+                                onClick = pickHomeBackground,
+                                border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.5f)),
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Photo,
+                                    contentDescription = stringResource(R.string.customize_background),
+                                    tint = colorPalette.text,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.width(8.dp))
