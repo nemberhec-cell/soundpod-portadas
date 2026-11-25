@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.soundpod.LocalPlayerPadding
-import com.github.soundpod.ui.appearance.HomePhotoBackground
 import com.github.soundpod.enums.ArtistSortBy
 import com.github.soundpod.enums.SortOrder
 import com.github.soundpod.models.Artist
@@ -49,7 +48,6 @@ fun HomeArtistList(
         )
     }
     Box(modifier = Modifier.fillMaxSize()) {
-        HomePhotoBackground()
             LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 100.dp),
         contentPadding = PaddingValues(
