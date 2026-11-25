@@ -52,7 +52,8 @@ fun MainNavigation(
     navController: NavHostController,
     sheetState: SheetState,
     onNavigateToSettings: () -> Unit,
-    onNavigateToHomeBackground: () -> Unit = {}
+    onNavigateToHomeBackground: () -> Unit = {},
+    onNavigateToListBackground: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
 
@@ -104,17 +105,20 @@ fun MainNavigation(
                 HomeStyle.AppleHome -> AppleHome(
                     navController = navController,
                     onSettingsClick = onNavigateToSettings,
-                    onHomeBackgroundClick = onNavigateToHomeBackground
+                    onHomeBackgroundClick = onNavigateToHomeBackground,
+                    onListBackgroundClick = onNavigateToListBackground
                 )
                 HomeStyle.SamsungHome -> SamsungHome(
                     navController = navController,
                     onSettingsClick = onNavigateToSettings,
-                    onHomeBackgroundClick = onNavigateToHomeBackground
+                    onHomeBackgroundClick = onNavigateToHomeBackground,
+                    onListBackgroundClick = onNavigateToListBackground
                 )
                 HomeStyle.SoundPodHome -> SoundPodHome(
                     navController = navController,
                     onSettingsClick = onNavigateToSettings,
-                    onHomeBackgroundClick = onNavigateToHomeBackground
+                    onHomeBackgroundClick = onNavigateToHomeBackground,
+                    onListBackgroundClick = onNavigateToListBackground
                 )
             }
         }
