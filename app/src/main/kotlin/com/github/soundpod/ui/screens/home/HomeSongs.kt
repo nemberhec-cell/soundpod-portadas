@@ -60,7 +60,6 @@ import com.github.soundpod.enums.SortOrder
 import com.github.soundpod.models.LocalMenuState
 import com.github.soundpod.models.Song
 import com.github.soundpod.ui.components.InHistoryMediaItemMenu
-import com.github.soundpod.ui.appearance.HomePhotoBackground
 import com.github.soundpod.ui.components.SortingHeader
 import com.github.soundpod.ui.items.LocalSongItem
 import com.github.soundpod.ui.styling.onOverlay
@@ -160,7 +159,6 @@ fun HomeSongs(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        HomePhotoBackground()
         if (!isPermissionGranted) {
         Column(
             modifier = Modifier
