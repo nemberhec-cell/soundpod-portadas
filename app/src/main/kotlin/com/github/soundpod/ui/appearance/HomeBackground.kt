@@ -95,6 +95,21 @@ fun rememberHomeFrontPhoto(): String? {
     return if (file != null && file.exists()) customPhotoFile else null
 }
 
+/**
+ * The back-layer photo file name, or null when unset (or file missing).
+ * Also used to decide whether the home Scaffold should be transparent
+ * so the photo is actually visible behind it.
+ */
+@Composable
+fun rememberHomeBackgroundPhotoFile(): String? {
+    val customPhotoFile by rememberPreference(HOME_BACKGROUND_PHOTO_KEY, "")
+    val context = LocalContext.current
+    val file = customPhotoFile.takeIf { it.isNotBlank() }?.let {
+        CustomArtworkStore.fileFor(context, it)
+    }
+    return if (file != null && file.exists()) customPhotoFile else null
+}
+
 /** Dim used over the front photo layer. */
 @Composable
 fun rememberHomeFrontDim(): Int {
