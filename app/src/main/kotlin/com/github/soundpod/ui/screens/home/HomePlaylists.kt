@@ -4,6 +4,7 @@ import androidx.annotation.OptIn
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -24,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.flow.flowOf
 import com.github.soundpod.LocalPlayerPadding
+import com.github.soundpod.ui.appearance.HomePhotoBackground
 import com.github.soundpod.LocalPlayerServiceBinder
 import com.github.soundpod.R
 import com.github.soundpod.db
@@ -88,7 +90,9 @@ fun HomePlaylists(
         )
     }
 
-    LazyVerticalGrid(
+    Box(modifier = Modifier.fillMaxSize()) {
+        HomePhotoBackground()
+            LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 150.dp),
         contentPadding = PaddingValues(
             top = 8.dp,
@@ -137,5 +141,6 @@ fun HomePlaylists(
                 onClick = { onPlaylistClick(playlistPreview.playlist) }
             )
         }
+    }
     }
 }
