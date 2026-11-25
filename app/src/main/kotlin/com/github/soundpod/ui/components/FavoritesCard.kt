@@ -30,6 +30,7 @@ import coil3.compose.AsyncImage
 import com.github.core.ui.LocalAppearance
 import com.github.soundpod.ui.common.IconSource
 import com.github.soundpod.utils.thumbnail
+import com.github.soundpod.customart.CustomAwareAsyncImage
 
 @Composable
 fun FavoritesCard(
@@ -38,6 +39,7 @@ fun FavoritesCard(
     icon: IconSource? = null,
     onClick: () -> Unit,
     thumbnailUrls: List<String> = emptyList(),
+    customCoverItemKey: String? = null,
     label: String? = null,
     subtitle: String? = null,
     onPlayClick: (() -> Unit)? = null
@@ -52,7 +54,20 @@ fun FavoritesCard(
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        if (thumbnailUrls.isNotEmpty()) {
+        if (customCoverItemKey != null) {
+            CustomAwareAsyncImage(
+                itemKey = customCoverItemKey,
+                fallbackUrl = thumbnailUrls.firstOrNull(),
+                sizePx = 512,
+                showPlaceholderIcon = false,
+                modifier = Modifier.fillMaxSize()
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.4f))
+            )
+        } else if (thumbnailUrls.isNotEmpty()) {
             Box(modifier = Modifier.fillMaxSize()) {
                 if (thumbnailUrls.size == 1) {
                     AsyncImage(
