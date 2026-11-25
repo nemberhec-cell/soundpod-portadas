@@ -40,8 +40,19 @@ const val HOME_BACKGROUND_DIM_KEY = "home_background_dim"
 const val HOME_FRONT_PHOTO_KEY = "home_front_photo_file"
 const val HOME_FRONT_DIM_KEY = "home_front_dim"
 
+/**
+ * List detail screens (playlists, albums, artists): their own back/front
+ * photo layers, independent from the home screen ones.
+ */
+const val LIST_BACKGROUND_PHOTO_KEY = "list_background_photo_file"
+const val LIST_BACKGROUND_DIM_KEY = "list_background_dim"
+const val LIST_FRONT_PHOTO_KEY = "list_front_photo_file"
+const val LIST_FRONT_DIM_KEY = "list_front_dim"
+
 private const val HOME_BACKGROUND_ITEM_KEY = "home_background"
 private const val HOME_FRONT_ITEM_KEY = "home_front"
+private const val LIST_BACKGROUND_ITEM_KEY = "list_background"
+private const val LIST_FRONT_ITEM_KEY = "list_front"
 
 /** Wallpaper chooser state for one layer. */
 class HomePhotoPicker(
@@ -115,6 +126,101 @@ fun rememberHomeBackgroundPhotoFile(): String? {
 fun rememberHomeFrontDim(): Int {
     val dimPercent by rememberPreference(HOME_FRONT_DIM_KEY, 55)
     return dimPercent.coerceIn(0, 100)
+}
+
+/**
+ * Full-screen photo background behind list detail screens (back layer).
+ */
+@Composable
+fun ListPhotoBackground() {
+    val customPhotoFile by rememberPreference(LIST_BACKGROUND_PHOTO_KEY, "")
+    if (customPhotoFile.isBlank()) return
+    val dimPercent by rememberPreference(LIST_BACKGROUND_DIM_KEY, 55)
+    val baseBackground = LocalAppearance.current.colorPalette.background0
+    val scrimAlpha = dimPercent.coerceIn(0, 100) / 100f
+
+    CustomPhotoBackground(
+        fileName = customPhotoFile,
+        modifier = Modifier.fillMaxSize()
+    )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    0f to baseBackground.copy(alpha = scrimAlpha),
+                    0.35f to baseBackground.copy(alpha = scrimAlpha * 0.8f),
+                    1f to baseBackground.copy(alpha = scrimAlpha)
+                )
+            )
+    )
+}
+
+/** The list back-layer photo file name, or null when unset (or file missing). */
+@Composable
+fun rememberListBackgroundPhotoFile(): String? {
+    val customPhotoFile by rememberPreference(LIST_BACKGROUND_PHOTO_KEY, "")
+    val context = LocalContext.current
+    val file = customPhotoFile.takeIf { it.isNotBlank() }?.let {
+        CustomArtworkStore.fileFor(context, it)
+    }
+    return if (file != null && file.exists()) customPhotoFile else null
+}
+
+/** The list front-layer photo file name, or null when unset (or file missing). */
+@Composable
+fun rememberListFrontPhoto(): String? {
+    val customPhotoFile by rememberPreference(LIST_FRONT_PHOTO_KEY, "")
+    val context = LocalContext.current
+    val file = customPhotoFile.takeIf { it.isNotBlank() }?.let {
+        CustomArtworkStore.fileFor(context, it)
+    }
+    return if (file != null && file.exists()) customPhotoFile else null
+}
+
+/** Dim used over the list front photo layer. */
+@Composable
+fun rememberListFrontDim(): Int {
+    val dimPercent by rememberPreference(LIST_FRONT_DIM_KEY, 55)
+    return dimPercent.coerceIn(0, 100)
+}
+
+/** Picker + dim controls for the list back layer. */
+@Composable
+fun rememberListBackgroundPicker(): HomePhotoPicker {
+    val pick = rememberPhotoPickerFor(LIST_BACKGROUND_PHOTO_KEY, LIST_BACKGROUND_ITEM_KEY)
+    val photo by rememberPreference(LIST_BACKGROUND_PHOTO_KEY, "")
+    var dim by rememberPreference(LIST_BACKGROUND_DIM_KEY, 55)
+    val context = LocalContext.current
+    return HomePhotoPicker(
+        photo = photo,
+        pick = pick,
+        remove = { removePhotoFor(context, LIST_BACKGROUND_PHOTO_KEY) },
+        dim = dim,
+        setDim = {
+            dim = it
+            context.preferences.edit { putInt(LIST_BACKGROUND_DIM_KEY, it) }
+        }
+    )
+}
+
+/** Picker + dim controls for the list front layer. */
+@Composable
+fun rememberListFrontPicker(): HomePhotoPicker {
+    val pick = rememberPhotoPickerFor(LIST_FRONT_PHOTO_KEY, LIST_FRONT_ITEM_KEY)
+    val photo by rememberPreference(LIST_FRONT_PHOTO_KEY, "")
+    var dim by rememberPreference(LIST_FRONT_DIM_KEY, 55)
+    val context = LocalContext.current
+    return HomePhotoPicker(
+        photo = photo,
+        pick = pick,
+        remove = { removePhotoFor(context, LIST_FRONT_PHOTO_KEY) },
+        dim = dim,
+        setDim = {
+            dim = it
+            context.preferences.edit { putInt(LIST_FRONT_DIM_KEY, it) }
+        }
+    )
 }
 
 /**
