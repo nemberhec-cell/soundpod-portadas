@@ -89,7 +89,7 @@ private fun LayerSettings(
             Text(text = stringResource(id = R.string.background_dim_description))
             Slider(
                 value = picker.dim.toFloat(),
-                onValueChange = picker.setDim,
+                onValueChange = { picker.setDim(it.toInt()) },
                 valueRange = 0f..100f,
                 modifier = Modifier.fillMaxWidth()
             )
