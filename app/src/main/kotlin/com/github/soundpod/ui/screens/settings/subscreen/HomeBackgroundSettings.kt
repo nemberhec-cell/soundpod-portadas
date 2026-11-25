@@ -32,56 +32,34 @@ import com.github.soundpod.ui.screens.settings.SettingsGroup
  * or adjust how dimmed it is.
  */
 @Composable
-fun HomeBackgroundSettingsContent() {
+fun HomeBackgroundSettingsContent(forLists: Boolean = false) {
     val backPicker = rememberHomeBackgroundPicker()
     val frontPicker = rememberHomeFrontPicker()
     val listBackPicker = rememberListBackgroundPicker()
     val listFrontPicker = rememberListFrontPicker()
+    val activeBackPicker = if (forLists) listBackPicker else backPicker
+    val activeFrontPicker = if (forLists) listFrontPicker else frontPicker
 
     Column {
         SettingsGroup(
-            title = stringResource(id = R.string.home_background)
+            title = stringResource(id = if (forLists) R.string.list_background else R.string.home_background)
         ) {
             LayerSettings(
-                title = stringResource(id = R.string.home_back_layer),
-                description = stringResource(id = R.string.home_back_layer_description),
-                picker = backPicker
+                title = stringResource(id = if (forLists) R.string.list_back_layer else R.string.home_back_layer),
+                description = stringResource(id = if (forLists) R.string.list_back_layer_description else R.string.home_back_layer_description),
+                picker = activeBackPicker
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         SettingsGroup(
-            title = stringResource(id = R.string.home_front_layer)
+            title = stringResource(id = if (forLists) R.string.list_front_layer else R.string.home_front_layer)
         ) {
             LayerSettings(
-                title = stringResource(id = R.string.home_front_layer_photo),
-                description = stringResource(id = R.string.home_front_layer_description),
-                picker = frontPicker
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        SettingsGroup(
-            title = stringResource(id = R.string.list_background)
-        ) {
-            LayerSettings(
-                title = stringResource(id = R.string.list_back_layer),
-                description = stringResource(id = R.string.list_back_layer_description),
-                picker = listBackPicker
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        SettingsGroup(
-            title = stringResource(id = R.string.list_front_layer)
-        ) {
-            LayerSettings(
-                title = stringResource(id = R.string.list_front_layer_photo),
-                description = stringResource(id = R.string.list_front_layer_description),
-                picker = listFrontPicker
+                title = stringResource(id = if (forLists) R.string.list_front_layer_photo else R.string.home_front_layer_photo),
+                description = stringResource(id = if (forLists) R.string.list_front_layer_description else R.string.home_front_layer_description),
+                picker = activeFrontPicker
             )
         }
 
