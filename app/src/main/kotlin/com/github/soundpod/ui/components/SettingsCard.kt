@@ -27,15 +27,16 @@ fun SettingsCard(
     backgroundDim: Int = 55,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val hasPhoto = backgroundPhoto != null
     Surface(
         modifier = modifier
             .fillMaxWidth(),
         shape = shape,
-        color = color,
+        color = if (hasPhoto) Color.Transparent else color,
         shadowElevation = elevation
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
-            if (backgroundPhoto != null) {
+            if (hasPhoto) {
                 // Front layer (the grey card) photo with a dim scrim so the
                 // text on top stays readable.
                 CustomPhotoBackground(
