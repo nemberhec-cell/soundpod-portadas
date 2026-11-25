@@ -1,0 +1,319 @@
+package com.github.soundpod.ui.screens.search
+
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavController
+import com.github.innertube.Innertube
+import com.github.innertube.requests.searchPage
+import com.github.innertube.utils.from
+import com.github.soundcore.Soundcore
+import com.github.soundcore.asSoundcoreArtistItem
+import com.github.soundcore.asSoundcoreSongItem
+import com.github.soundpod.LocalPlayerServiceBinder
+import com.github.soundpod.R
+import com.github.soundpod.models.ActionInfo
+import com.github.soundpod.models.LocalMenuState
+import com.github.soundpod.ui.components.NonQueuedMediaItemMenu
+import com.github.soundpod.ui.components.SettingsCard
+import com.github.soundpod.ui.components.StaticScreenLayout
+import com.github.soundpod.ui.components.SwipeToActionBox
+import com.github.soundpod.ui.items.AlbumItem
+import com.github.soundpod.ui.items.ArtistItem
+import com.github.soundpod.ui.items.ItemPlaceholder
+import com.github.soundpod.ui.items.ListItemPlaceholder
+import com.github.soundpod.ui.items.PlaylistItem
+import com.github.soundpod.ui.items.SongItem
+import com.github.soundpod.ui.items.VideoItem
+import com.github.soundpod.ui.navigation.Routes
+import com.github.soundpod.utils.asMediaItem
+import com.github.soundpod.utils.enqueue
+import com.github.soundpod.utils.forcePlay
+import java.util.Locale
+
+private fun getItemName(item: Innertube.Item): String? = when (item) {
+    is Innertube.SongItem -> "${item.info?.name.orEmpty()} - ${item.authors?.firstOrNull()?.name.orEmpty()}"
+    is Innertube.AlbumItem -> "${item.info?.name.orEmpty()} - ${item.authors?.firstOrNull()?.name.orEmpty()}"
+    is Innertube.ArtistItem -> item.info?.name
+    is Innertube.PlaylistItem -> item.info?.name
+    is Innertube.VideoItem -> item.info?.name
+}
+
+private fun <T : Innertube.Item> mergeItems(list1: List<T>?, list2: List<T>?): List<T> {
+    if (list1.isNullOrEmpty()) return list2.orEmpty()
+    if (list2.isNullOrEmpty()) return list1
+    val result = mutableListOf<T>()
+    val iter1 = list1.iterator()
+    val iter2 = list2.iterator()
+    val seenKeys = mutableSetOf<String>()
+    val seenNames = mutableSetOf<String>()
+
+    var hasMore = true
+    while (hasMore) {
+        hasMore = false
+        if (iter1.hasNext()) {
+            val item = iter1.next()
+            val normName = getItemName(item)?.lowercase(Locale.ROOT)?.trim().orEmpty()
+            if (seenKeys.add(item.key) && (normName.isBlank() || seenNames.add(normName))) {
+                result.add(item)
+            }
+            hasMore = true
+        }
+        if (iter2.hasNext()) {
+            val item = iter2.next()
+            val normName = getItemName(item)?.lowercase(Locale.ROOT)?.trim().orEmpty()
+            if (seenKeys.add(item.key) && (normName.isBlank() || seenNames.add(normName))) {
+                result.add(item)
+            }
+            hasMore = true
+        }
+    }
+    return result
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
+@UnstableApi
+@Composable
+fun NewSearchResult(
+    navController: NavController,
+    query: String,
+    resultType: String?
+) {
+    BackHandler { navController.popBackStack() }
+
+    val binder = LocalPlayerServiceBinder.current
+    val menuState = LocalMenuState.current
+    val emptyItemsText = stringResource(id = R.string.no_results_found)
+
+    val onAlbumClick: (String) -> Unit = { albumId -> navController.navigate(Routes.Album(id = albumId)) }
+    val onArtistClick: (String) -> Unit = { artistId -> navController.navigate(Routes.Artist(id = artistId)) }
+    val onPlaylistClick: (String) -> Unit = { playlistId -> navController.navigate(Routes.Playlist(id = playlistId)) }
+
+    StaticScreenLayout(
+        title = resultType ?: stringResource(R.string.results),
+        onBackClick = { navController.popBackStack() },
+        scrollable = false,
+        horizontalPadding = 0.dp
+    ) {
+        SettingsCard(
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(topStart = 25.dp, topEnd = 25.dp)
+        ){
+            when (resultType) {
+
+                stringResource(R.string.songs) -> {
+                    ItemsPage(
+                        tag = "searchResults/$query/songs",
+                        itemsPageProvider = { continuation ->
+                            if (continuation == null) {
+                                val innertubePage = Innertube.searchPage(
+                                    query = query,
+                                    params = Innertube.SearchFilter.Song.value,
+                                    fromMusicShelfRendererContent = Innertube.SongItem.Companion::from
+                                )?.getOrNull()
+                                val soundcoreSongs = runCatching { Soundcore.searchSongs(query) }.getOrDefault(emptyList())
+                                val merged = mergeItems(innertubePage?.items, soundcoreSongs.map { it.asSoundcoreSongItem })
+                                Result.success(Innertube.ItemsPage(items = merged, continuation = innertubePage?.continuation))
+                            } else {
+                                Innertube.searchPage(
+                                    continuation = continuation,
+                                    fromMusicShelfRendererContent = Innertube.SongItem.Companion::from
+                                )
+                            }
+                        },
+                        emptyItemsText = emptyItemsText,
+                        enablePreCache = true,
+                        itemContent = { song, _, _ ->
+                            SwipeToActionBox(
+                                modifier = Modifier.animateItem(),
+                                primaryAction = ActionInfo(
+                                    onClick = { binder?.player?.enqueue(song.asMediaItem) },
+                                    icon = Icons.AutoMirrored.Outlined.PlaylistPlay,
+                                    description = R.string.enqueue
+                                )
+                            ) {
+                                SongItem(
+                                    song = song,
+                                    onClick = {
+                                        binder?.stopRadio()
+                                        binder?.player?.forcePlay(song.asMediaItem)
+                                        binder?.setupRadio(song.info?.endpoint, song.info?.name, song.authors?.firstOrNull()?.name)
+                                    },
+                                    onLongClick = {
+                                        menuState.display {
+                                            NonQueuedMediaItemMenu(
+                                                onDismiss = menuState::hide,
+                                                mediaItem = song.asMediaItem,
+                                                onGoToAlbum = onAlbumClick,
+                                                onGoToArtist = onArtistClick
+                                            )
+                                        }
+                                    }
+                                )
+                            }
+                        },
+                        itemPlaceholderContent = { ListItemPlaceholder() }
+                    )
+                }
+
+                stringResource(R.string.videos) -> {
+                    ItemsPage(
+                        tag = "searchResults/$query/videos",
+                        itemsPageProvider = { continuation ->
+                            if (continuation == null) {
+                                Innertube.searchPage(
+                                    query = query,
+                                    params = Innertube.SearchFilter.Video.value,
+                                    fromMusicShelfRendererContent = Innertube.VideoItem::from
+                                )
+                            } else {
+                                Innertube.searchPage(
+                                    continuation = continuation,
+                                    fromMusicShelfRendererContent = Innertube.VideoItem::from
+                                )
+                            }
+                        },
+                        emptyItemsText = emptyItemsText,
+                        itemContent = { video, _, _ ->
+                            SwipeToActionBox(
+                                modifier = Modifier.animateItem(),
+                                primaryAction = ActionInfo(
+                                    onClick = { binder?.player?.enqueue(video.asMediaItem) },
+                                    icon = Icons.AutoMirrored.Outlined.PlaylistPlay,
+                                    description = R.string.enqueue
+                                )
+                            ) {
+                                VideoItem(
+                                    video = video,
+                                    onClick = {
+                                        binder?.stopRadio()
+                                        binder?.player?.forcePlay(video.asMediaItem)
+                                        binder?.setupRadio(video.info?.endpoint)
+                                    },
+                                    onLongClick = {
+                                        menuState.display {
+                                            NonQueuedMediaItemMenu(
+                                                onDismiss = menuState::hide,
+                                                mediaItem = video.asMediaItem,
+                                                onGoToAlbum = onAlbumClick,
+                                                onGoToArtist = onArtistClick
+                                            )
+                                        }
+                                    }
+                                )
+                            }
+                        },
+                        itemPlaceholderContent = { ListItemPlaceholder() }
+                    )
+                }
+
+                stringResource(R.string.albums) -> {
+                    ItemsPage(
+                        tag = "searchResults/$query/albums",
+                        itemsPageProvider = { continuation ->
+                            if (continuation == null) {
+                                Innertube.searchPage(
+                                    query = query,
+                                    params = Innertube.SearchFilter.Album.value,
+                                    fromMusicShelfRendererContent = Innertube.AlbumItem::from
+                                )
+                            } else {
+                                Innertube.searchPage(
+                                    continuation = continuation,
+                                    fromMusicShelfRendererContent = Innertube.AlbumItem::from
+                                )
+                            }
+                        },
+                        emptyItemsText = emptyItemsText,
+                        itemContent = { album, _, _ ->
+                            AlbumItem(
+                                album = album,
+                                onClick = { onAlbumClick(album.key) }
+                            )
+                        },
+                        itemPlaceholderContent = { ItemPlaceholder() }
+                    )
+                }
+
+                stringResource(R.string.artists) -> {
+                    ItemsPage(
+                        tag = "searchResults/$query/artists",
+                        itemsPageProvider = { continuation ->
+                            if (continuation == null) {
+                                val innertubePage = Innertube.searchPage(
+                                    query = query,
+                                    params = Innertube.SearchFilter.Artist.value,
+                                    fromMusicShelfRendererContent = Innertube.ArtistItem::from
+                                )?.getOrNull()
+                                val soundcoreArtists = runCatching { Soundcore.searchArtists(query) }.getOrDefault(emptyList())
+                                val merged = mergeItems(innertubePage?.items, soundcoreArtists.map { it.asSoundcoreArtistItem })
+                                Result.success(Innertube.ItemsPage(items = merged, continuation = innertubePage?.continuation))
+                            } else {
+                                Innertube.searchPage(
+                                    continuation = continuation,
+                                    fromMusicShelfRendererContent = Innertube.ArtistItem::from
+                                )
+                            }
+                        },
+                        emptyItemsText = emptyItemsText,
+                        itemContent = { artist, _, _ ->
+                            ArtistItem(
+                                artist = artist,
+                                onClick = { onArtistClick(artist.key) }
+                            )
+                        },
+                        itemPlaceholderContent = { ItemPlaceholder(shape = CircleShape) }
+                    )
+                }
+
+                stringResource(R.string.playlists) -> {
+                    ItemsPage(
+                        tag = "searchResults/$query/playlists",
+                        itemsPageProvider = { continuation ->
+                            if (continuation == null) {
+                                Innertube.searchPage(
+                                    query = query,
+                                    params = Innertube.SearchFilter.CommunityPlaylist.value,
+                                    fromMusicShelfRendererContent = Innertube.PlaylistItem::from
+                                )
+                            } else {
+                                Innertube.searchPage(
+                                    continuation = continuation,
+                                    fromMusicShelfRendererContent = Innertube.PlaylistItem::from
+                                )
+                            }
+                        },
+                        emptyItemsText = emptyItemsText,
+                        itemContent = { playlist, _, _ ->
+                            PlaylistItem(
+                                playlist = playlist,
+                                onClick = { onPlaylistClick(playlist.key) }
+                            )
+                        },
+                        itemPlaceholderContent = { ItemPlaceholder() }
+                    )
+                }
+
+                else -> {
+                    Text(
+                        text = stringResource(R.string.unknown_category, resultType ?: "?"),
+                        modifier = Modifier.padding(20.dp),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        }
+    }
+}
