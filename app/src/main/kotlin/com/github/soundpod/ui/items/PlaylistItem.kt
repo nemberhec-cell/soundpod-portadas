@@ -29,6 +29,8 @@ import com.github.soundpod.db
 import com.github.soundpod.models.PlaylistPreview
 import com.github.soundpod.ui.styling.px
 import com.github.soundpod.utils.thumbnail
+import com.github.soundpod.customart.CustomAwareAsyncImage
+import com.github.soundpod.customart.rememberCustomArtworkFileName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -127,6 +129,21 @@ fun LocalPlaylistItem(
                 }
             }.collectAsState(initial = emptyList(), context = Dispatchers.IO)
 
+            // The cover the user set for this playlist (if any) wins everywhere.
+            val playlistCoverKey = "playlist:${playlist.playlist.id}"
+            val customArtworkFileName by rememberCustomArtworkFileName(playlistCoverKey)
+            if (customArtworkFileName != null) {
+                CustomAwareAsyncImage(
+                    itemKey = playlistCoverKey,
+                    fallbackUrl = thumbnails.firstOrNull(),
+                    sizePx = thumbnailWidthPx,
+                    showPlaceholderIcon = false,
+                    modifier = Modifier
+                        .size(thumbnailWidthDp)
+                        .clip(MaterialTheme.shapes.large)
+                )
+            }
+
             Icon(
                 painter = painterResource(R.drawable.app_icon),
                 contentDescription = null,
@@ -134,7 +151,7 @@ fun LocalPlaylistItem(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
             )
 
-            if (thumbnails.toSet().size == 1) {
+            if (customArtworkFileName == null && thumbnails.toSet().size == 1) {
                 AsyncImage(
                     model = thumbnails.firstOrNull()?.thumbnail(thumbnailWidthPx),
                     contentDescription = null,
@@ -143,7 +160,7 @@ fun LocalPlaylistItem(
                         .size(thumbnailWidthDp)
                         .clip(MaterialTheme.shapes.large)
                 )
-            } else {
+            } else if (customArtworkFileName == null) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     listOf(
                         Alignment.TopStart,
