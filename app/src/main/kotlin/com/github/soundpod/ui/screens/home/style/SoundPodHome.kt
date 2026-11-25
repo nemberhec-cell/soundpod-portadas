@@ -62,6 +62,7 @@ fun SoundPodHome(
     navController: NavController,
     onSettingsClick: () -> Unit,
     onHomeBackgroundClick: () -> Unit = {},
+    onListBackgroundClick: () -> Unit = {},
 ) {
     val updateAvailable by rememberPreference(updateAvailableKey, false)
     val appearanceUpdated by rememberPreference(appearanceUpdatedKey, false)
@@ -127,6 +128,16 @@ fun SoundPodHome(
                 Icon(
                     imageVector = Icons.Default.Photo,
                     contentDescription = stringResource(R.string.customize_background),
+                    tint = colorPalette.text
+                )
+            }
+            OutlinedIconButton(
+                onClick = onListBackgroundClick,
+                border = BorderStroke(1.dp, Color.Gray)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Photo,
+                    contentDescription = stringResource(R.string.customize_list_background),
                     tint = colorPalette.text
                 )
             }
