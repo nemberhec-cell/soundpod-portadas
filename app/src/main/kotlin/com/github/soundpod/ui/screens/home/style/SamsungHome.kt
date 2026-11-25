@@ -55,6 +55,8 @@ import com.github.soundpod.utils.rememberPreference
 import com.github.soundpod.utils.updateAvailableKey
 import com.github.soundpod.ui.appearance.HomePhotoBackground
 import com.github.soundpod.ui.appearance.rememberHomeBackgroundPicker
+import com.github.soundpod.ui.appearance.rememberHomeFrontDim
+import com.github.soundpod.ui.appearance.rememberHomeFrontPhoto
 
 @Composable
 fun SamsungHome(
@@ -81,6 +83,8 @@ fun SamsungHome(
     val (colorPalette) = LocalAppearance.current
 
     val pickHomeBackground = rememberHomeBackgroundPicker()
+    val frontPhoto = rememberHomeFrontPhoto()
+    val frontDim = rememberHomeFrontDim()
 
     Box(modifier = Modifier.fillMaxSize()) {
         HomePhotoBackground()
@@ -118,7 +122,7 @@ fun SamsungHome(
                 )
             }
             OutlinedIconButton(
-                onClick = pickHomeBackground,
+                onClick = pickHomeBackground.pick,
                 border = BorderStroke(1.dp, Color.Gray)
             ) {
                 Icon(
@@ -158,7 +162,9 @@ fun SamsungHome(
             )
 
         SettingsCard(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            backgroundPhoto = frontPhoto,
+            backgroundDim = frontDim
         ) {
             HorizontalPager(
                 state = pagerState,
