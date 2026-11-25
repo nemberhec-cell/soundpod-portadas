@@ -66,7 +66,7 @@ fun PlayerBackground(
     LaunchedEffect(thumbnailUrl, colorPalette, photoSource) {
         clusters = extractColorClusters(
             context,
-            (photoSource?.absolutePath ?: thumbnailUrl),
+            (photoSource ?: thumbnailUrl),
             fallbackColor
         )
     }
