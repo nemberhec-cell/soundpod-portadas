@@ -5,7 +5,10 @@ package com.github.soundpod.ui.screens.home.style
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -14,6 +17,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -49,6 +53,8 @@ import com.github.soundpod.utils.HomeTab
 import com.github.soundpod.utils.appearanceUpdatedKey
 import com.github.soundpod.utils.rememberPreference
 import com.github.soundpod.utils.updateAvailableKey
+import com.github.soundpod.ui.appearance.HomePhotoBackground
+import com.github.soundpod.ui.appearance.rememberHomeBackgroundPicker
 
 @Composable
 fun SamsungHome(
@@ -74,7 +80,12 @@ fun SamsungHome(
 
     val (colorPalette) = LocalAppearance.current
 
-    StaticScreenLayout(
+    val pickHomeBackground = rememberHomeBackgroundPicker()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        HomePhotoBackground()
+
+        StaticScreenLayout(
         title = {
             Text(
                 text = "SoundPod",
@@ -106,6 +117,17 @@ fun SamsungHome(
                     style = typography.bodyMedium
                 )
             }
+            OutlinedIconButton(
+                onClick = pickHomeBackground,
+                border = BorderStroke(1.dp, Color.Gray)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Photo,
+                    contentDescription = stringResource(R.string.customize_background),
+                    tint = colorPalette.text
+                )
+            }
+            Spacer(modifier = Modifier.width(4.dp))
             OutlinedIconButton(
                 onClick = onSettingsClick,
                 border = BorderStroke(1.dp, Color.Gray)
@@ -199,6 +221,8 @@ fun SamsungHome(
                 }
             }
         }
+    }
+
     }
 
 }
