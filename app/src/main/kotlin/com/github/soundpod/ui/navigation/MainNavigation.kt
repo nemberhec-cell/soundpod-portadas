@@ -51,7 +51,8 @@ import kotlin.reflect.KClass
 fun MainNavigation(
     navController: NavHostController,
     sheetState: SheetState,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    onNavigateToHomeBackground: () -> Unit = {}
 ) {
     val scope = rememberCoroutineScope()
 
@@ -102,15 +103,18 @@ fun MainNavigation(
             when (homeStyle) {
                 HomeStyle.AppleHome -> AppleHome(
                     navController = navController,
-                    onSettingsClick = onNavigateToSettings
+                    onSettingsClick = onNavigateToSettings,
+                    onHomeBackgroundClick = onNavigateToHomeBackground
                 )
                 HomeStyle.SamsungHome -> SamsungHome(
                     navController = navController,
-                    onSettingsClick = onNavigateToSettings
+                    onSettingsClick = onNavigateToSettings,
+                    onHomeBackgroundClick = onNavigateToHomeBackground
                 )
                 HomeStyle.SoundPodHome -> SoundPodHome(
                     navController = navController,
-                    onSettingsClick = onNavigateToSettings
+                    onSettingsClick = onNavigateToSettings,
+                    onHomeBackgroundClick = onNavigateToHomeBackground
                 )
             }
         }
