@@ -63,7 +63,7 @@ fun rememberCustomArtworkPicker(
     return remember(launcher) {
         { itemKey: String ->
             pendingKey = itemKey
-            launcher.launch(arrayOf("image/*", "image/gif", "image/webp"))
+            launcher.launch("image/*")
         }
     }
 }
