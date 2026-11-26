@@ -4,8 +4,8 @@
     <string name="home">Home</string>
     <string name="songs">Songs</string>
     <string name="playlists">Playlists</string>
-    <string name="import">Import</string>
-    <string name="import_description">Transfer playlists manually: open the other app, share its playlist to SoundPod, or import a list from this phone or an .m3u file. Solo se puede leer lo que está en el teléfono y lo que compartes.</string>
+    <string name="import_tab">Import</string>
+    <string name="import_tab_description">Transfer playlists manually: open the other app, share its playlist to SoundPod, or import a list from this phone or an .m3u file. Solo se puede leer lo que está en el teléfono y lo que compartes.</string>
     <string name="import_from_apps">Music apps installed</string>
     <string name="import_no_apps_found">No known music apps were found. You can still share a playlist link to SoundPod from any app.</string>
     <string name="import_share_hint">Manual transfer: open the app, open one of its playlists and use its Share / Compartir option, choosing SoundPod. The playlist will be saved as one of your lists.</string>
