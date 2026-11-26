@@ -25,6 +25,20 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToLong
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import com.github.soundpod.utils.rememberPreference
+import coil3.compose.AsyncImage
+import coil3.request.CachePolicy
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
+import com.github.soundpod.customart.CustomArtworkStore
+
+/** Preference key: the photo (or GIF) shown on the seek-bar dot. */
+const val SEEK_BAR_PHOTO_KEY = "seek_bar_photo_file"
 
 @Composable
 fun SeekBar(
@@ -43,6 +57,13 @@ fun SeekBar(
     shape: Shape = RectangleShape,
 ) {
     val isDragging = remember { MutableTransitionState(false) }
+
+    // Your image on the dot (photo or GIF). Empty string by default.
+    val context = LocalContext.current
+    val seekPhotoFile by rememberPreference(SEEK_BAR_PHOTO_KEY, "")
+    val seekPhoto = seekPhotoFile.takeIf { it.isNotBlank() }?.let {
+        CustomArtworkStore.fileFor(context, it)
+    }?.takeIf { it.exists() }
 
     val transition = rememberTransition(transitionState = isDragging, label = "SeekbarTransition")
 
@@ -97,7 +118,7 @@ fun SeekBar(
             }
             .drawWithContent {
                 drawContent()
-                if (currentScrubberRadius > 0.dp) {
+                if (currentScrubberRadius > 0.dp && seekPhoto == null) {
                     drawCircle(
                         color = scrubberColor,
                         radius = currentScrubberRadius.toPx(),
@@ -120,6 +141,36 @@ fun SeekBar(
                         .fillMaxHeight()
                         .fillMaxWidth(progress)
                         .background(color = color)
+                )
+            }
+        }
+
+        // Your photo/GIF as the dot itself, following the progress.
+        if (seekPhoto != null) {
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                val dotSize = 28.dp
+                val trackWidth = maxWidth
+                val dotCenterX = progress * trackWidth.value
+                val xOffset = (dotCenterX - dotSize.value / 2).coerceIn(
+                    0f,
+                    (trackWidth.value - dotSize.value).coerceAtLeast(0f)
+                ).dp
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(seekPhoto)
+                        .allowHardware(true)
+                        .memoryCachePolicy(CachePolicy.DISABLED)
+                        .size(56)
+                        .build(),
+                    contentDescription = null,
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                    modifier = Modifier
+                        .offset { androidx.compose.ui.unit.IntOffset(x = xOffset.roundToPx(), y = 0) }
+                        .size(dotSize)
+                        .clip(androidx.compose.foundation.shape.CircleShape)
                 )
             }
         }
