@@ -32,6 +32,17 @@ import com.github.soundpod.query
 import com.github.soundpod.ui.components.ConfirmationDialog
 import com.github.soundpod.ui.components.ParallaxScreenLayout
 import com.github.soundpod.ui.components.TextFieldDialog
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.Text as ListText
+import androidx.compose.material.icons.filled.Photo
+import androidx.compose.material3.Icon
+import com.github.soundpod.ui.screens.settings.subscreen.ListBackgroundEditor
+import com.github.soundpod.utils.tooltip
+import com.github.soundpod.ui.components.InfoLabel
+
 import com.github.soundpod.customart.hasCustomArtwork
 import com.github.soundpod.customart.rememberCustomArtworkPicker
 import com.github.soundpod.customart.removeCustomArtwork
@@ -62,6 +73,7 @@ fun FavoritePlaylistScreen(
     var selectedUids by remember { mutableStateOf(emptySet<String>()) }
     var isSearching by remember { mutableStateOf(false) }
 
+    var showListBackgroundSettings by remember { mutableStateOf(false) }
     var songCount by remember { mutableIntStateOf(0) }
     // No auto-cover: the playlist cover is only what the user sets.
     val thumbnailUrl: String? = null
@@ -112,6 +124,15 @@ fun FavoritePlaylistScreen(
             }
         },
         actions = {
+            IconButton(
+                onClick = { showListBackgroundSettings = true }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Photo,
+                    contentDescription = stringResource(R.string.customize_list_background),
+                    tint = colorPalette.text
+                )
+            }
             IconButton(
                 onClick = onSearchClick
             ) {
@@ -195,6 +216,7 @@ fun FavoritePlaylistScreen(
         thumbnailUrl = thumbnailUrl,
         thumbnailItemKey = playlistCoverKey,
         onThumbnailClick = { pickCover(playlistCoverKey) },
+        listBackgroundKey = playlistCoverKey,
         headerTitle = playlist?.name ?: "",
         content = {
             FavoritePlaylistSongs(
@@ -228,6 +250,15 @@ fun FavoritePlaylistScreen(
                 }
             }
         )
+    }
+
+    if (showListBackgroundSettings) {
+        ModalBottomSheet(
+            onDismissRequest = { showListBackgroundSettings = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ) {
+            ListBackgroundEditor(listKey = playlistCoverKey)
+        }
     }
 
     if (isDeleting) {
