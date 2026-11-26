@@ -328,6 +328,8 @@
     <string name="customize_list_background">Customize list background</string>
     <string name="seek_bar_dot_image">Seek bar dot image</string>
     <string name="seek_bar_dot_image_description">Your photo or GIF on the moving dot of the progress bar</string>
+    <string name="seek_bar_dot_image_photo">Progress dot photo</string>
+    <string name="customize_player_background">Customize player background</string>
     <string name="list_background_description">This list has its own back and front photos, separate from other lists and the main menu</string>
     <string name="home_background_only">Home background (main menu)</string>
     <string name="list_background_only">List background (playlists, albums, artists)</string>
