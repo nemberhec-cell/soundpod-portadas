@@ -47,6 +47,7 @@ import com.github.soundpod.ui.screens.home.FollowingScreen
 import com.github.soundpod.ui.screens.home.HomeAlbums
 import com.github.soundpod.ui.screens.home.HomeArtistList
 import com.github.soundpod.ui.screens.home.HomePlaylists
+import com.github.soundpod.ui.screens.importer.ImportScreen
 import com.github.soundpod.ui.screens.home.HomeSongs
 import com.github.soundpod.ui.screens.home.QuickPicks
 import com.github.soundpod.utils.HomeTab
@@ -224,6 +225,8 @@ fun SoundPodHome(
                             navController.navigate(route = Routes.LocalPlaylist(id = playlist.id))
                         }
                     )
+
+                    HomeTab.Import -> ImportScreen()
                 }
             }
         }
