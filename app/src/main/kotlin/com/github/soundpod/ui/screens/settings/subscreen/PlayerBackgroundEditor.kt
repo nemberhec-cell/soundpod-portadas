@@ -22,15 +22,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
+import com.github.soundpod.LocalPlayerServiceBinder
 import com.github.soundpod.R
 import com.github.soundpod.customart.CustomArtworkStore
+import com.github.soundpod.customart.hasCustomArtwork
+import com.github.soundpod.customart.rememberCustomArtworkFileName
+import com.github.soundpod.customart.removeCustomArtwork
 import com.github.soundpod.customart.toastCoverFailed
+import com.github.soundpod.db
+import com.github.soundpod.query
+import com.github.soundpod.customart.CustomArtwork
 import com.github.soundpod.ui.appearance.BackgroundStyles
-import com.github.soundpod.ui.appearance.PLAYER_BACKGROUND_PHOTO_KEY
 import com.github.soundpod.ui.appearance.PLAYER_BACKGROUND_STYLE_KEY
 import com.github.soundpod.ui.appearance.PLAYER_BACKGROUND_DIM_KEY
 import com.github.soundpod.ui.common.IconSource
-import com.github.soundpod.ui.screens.player.seekbar.SEEK_BAR_PHOTO_KEY
 import com.github.soundpod.ui.screens.settings.SettingsColumn
 import com.github.soundpod.ui.screens.settings.SettingsGroup
 import com.github.soundpod.utils.preferences
@@ -40,16 +45,23 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Player background editor that lives INSIDE the player: its own photo
- * (back) and the seek-bar dot image. Nothing here touches the main menu
- * or the lists.
+ * Per-song player editor (inside the player):
+ *  - background photo/GIF **only for the current song** (playerbg:<mediaId>)
+ *  - seek-dot photo/GIF **only for the current song** (seekdot:<mediaId>)
+ * Each song is independent: changing song shows its own photos, or none.
  */
 @Composable
 fun PlayerBackgroundEditor() {
     val context = LocalContext.current
     val prefs = context.preferences
-    var customPhotoFile by rememberPreference(PLAYER_BACKGROUND_PHOTO_KEY, "")
-    var seekPhotoFile by rememberPreference(SEEK_BAR_PHOTO_KEY, "")
+    val binder = LocalPlayerServiceBinder.current
+    val currentMediaId = binder?.player?.currentMediaItem?.mediaId
+        ?: return
+    val bgKey = "playerbg:$currentMediaId"
+    val dotKey = "seekdot:$currentMediaId"
+
+    val bgFileName by rememberCustomArtworkFileName(bgKey)
+    val dotFileName by rememberCustomArtworkFileName(dotKey)
     var dim by rememberPreference(PLAYER_BACKGROUND_DIM_KEY, 55)
     val scope = rememberCoroutineScope()
 
@@ -59,15 +71,17 @@ fun PlayerBackgroundEditor() {
         if (uri == null) return@rememberLauncherForActivityResult
         scope.launch {
             val fileName = withContext(Dispatchers.IO) {
-                CustomArtworkStore.copyPickedImage(context, uri, "player_background")
+                CustomArtworkStore.copyPickedImage(context, uri, bgKey)
             }
             if (fileName == null) { toastCoverFailed(context); return@launch }
-            val previous = customPhotoFile
-            customPhotoFile = fileName
-            prefs.edit { putInt(PLAYER_BACKGROUND_STYLE_KEY, BackgroundStyles.MY_PHOTO) }
-            if (previous.isNotBlank() && previous != fileName) {
-                withContext(Dispatchers.IO) { CustomArtworkStore.delete(context, previous) }
+            query {
+                val previous = db.getCustomArtwork(bgKey)
+                db.upsert(CustomArtwork(itemKey = bgKey, fileName = fileName))
+                if (previous != null && previous.fileName != fileName) {
+                    CustomArtworkStore.delete(context, previous.fileName)
+                }
             }
+            prefs.edit { putInt(PLAYER_BACKGROUND_STYLE_KEY, BackgroundStyles.MY_PHOTO) }
         }
     }
 
@@ -77,13 +91,15 @@ fun PlayerBackgroundEditor() {
         if (uri == null) return@rememberLauncherForActivityResult
         scope.launch {
             val fileName = withContext(Dispatchers.IO) {
-                CustomArtworkStore.copyPickedImage(context, uri, "seek_bar_dot")
+                CustomArtworkStore.copyPickedImage(context, uri, dotKey)
             }
             if (fileName == null) { toastCoverFailed(context); return@launch }
-            val previous = seekPhotoFile
-            seekPhotoFile = fileName
-            if (previous.isNotBlank() && previous != fileName) {
-                withContext(Dispatchers.IO) { CustomArtworkStore.delete(context, previous) }
+            query {
+                val previous = db.getCustomArtwork(dotKey)
+                db.upsert(CustomArtwork(itemKey = dotKey, fileName = fileName))
+                if (previous != null && previous.fileName != fileName) {
+                    CustomArtworkStore.delete(context, previous.fileName)
+                }
             }
         }
     }
@@ -98,13 +114,11 @@ fun PlayerBackgroundEditor() {
                 description = stringResource(id = R.string.my_photo_description),
                 onClick = { photoPicker.launch("image/*") }
             )
-            if (customPhotoFile.isNotBlank()) {
+            if (!bgFileName.isNullOrBlank()) {
                 Row(modifier = Modifier.padding(horizontal = 16.dp)) {
                     TextButton(onClick = {
-                        val previous = customPhotoFile
-                        customPhotoFile = ""
+                        removeCustomArtwork(context, bgKey)
                         prefs.edit { putInt(PLAYER_BACKGROUND_STYLE_KEY, BackgroundStyles.CROSS_FADE) }
-                        scope.launch { withContext(Dispatchers.IO) { CustomArtworkStore.delete(context, previous) } }
                     }) { Text(text = stringResource(id = R.string.remove_photo)) }
                 }
                 Column(
@@ -135,12 +149,10 @@ fun PlayerBackgroundEditor() {
                 description = stringResource(id = R.string.seek_bar_dot_image_description),
                 onClick = { seekPicker.launch("image/*") }
             )
-            if (seekPhotoFile.isNotBlank()) {
+            if (!dotFileName.isNullOrBlank()) {
                 Row(modifier = Modifier.padding(horizontal = 16.dp)) {
                     TextButton(onClick = {
-                        val previous = seekPhotoFile
-                        seekPhotoFile = ""
-                        scope.launch { withContext(Dispatchers.IO) { CustomArtworkStore.delete(context, previous) } }
+                        removeCustomArtwork(context, dotKey)
                     }) { Text(text = stringResource(id = R.string.remove_photo)) }
                 }
             }
