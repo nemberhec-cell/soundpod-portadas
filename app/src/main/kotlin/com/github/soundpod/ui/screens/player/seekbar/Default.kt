@@ -30,18 +30,17 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import com.github.soundpod.utils.rememberPreference
 import coil3.compose.AsyncImage
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
-import com.github.soundpod.customart.CustomArtworkStore
 
-/** Preference key: the photo (or GIF) shown on the seek-bar dot. */
+/** Kept for backwards compatibility: the dot image is now per-song. */
 const val SEEK_BAR_PHOTO_KEY = "seek_bar_photo_file"
 
 @Composable
 fun SeekBar(
+    mediaId: String? = null,
     value: Long,
     minimumValue: Long,
     maximumValue: Long,
@@ -58,12 +57,9 @@ fun SeekBar(
 ) {
     val isDragging = remember { MutableTransitionState(false) }
 
-    // Your image on the dot (photo or GIF). Empty string by default.
+    // Per-song image on the dot (photo or GIF). Empty by default.
     val context = LocalContext.current
-    val seekPhotoFile by rememberPreference(SEEK_BAR_PHOTO_KEY, "")
-    val seekPhoto = seekPhotoFile.takeIf { it.isNotBlank() }?.let {
-        CustomArtworkStore.fileFor(context, it)
-    }?.takeIf { it.exists() }
+    val seekPhoto = rememberSeekPhoto(mediaId)
 
     val transition = rememberTransition(transitionState = isDragging, label = "SeekbarTransition")
 
