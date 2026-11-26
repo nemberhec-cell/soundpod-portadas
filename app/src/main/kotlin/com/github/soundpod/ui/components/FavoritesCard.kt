@@ -31,6 +31,7 @@ import com.github.core.ui.LocalAppearance
 import com.github.soundpod.ui.common.IconSource
 import com.github.soundpod.utils.thumbnail
 import com.github.soundpod.customart.CustomAwareAsyncImage
+import com.github.soundpod.customart.rememberCustomArtworkFileName
 
 @Composable
 fun FavoritesCard(
@@ -55,6 +56,7 @@ fun FavoritesCard(
         contentAlignment = Alignment.Center
     ) {
         if (customCoverItemKey != null) {
+            // Custom cover (foto o GIF): se mueve tanto dentro de la lista como aquí en el menú.
             CustomAwareAsyncImage(
                 itemKey = customCoverItemKey,
                 fallbackUrl = thumbnailUrls.firstOrNull(),
