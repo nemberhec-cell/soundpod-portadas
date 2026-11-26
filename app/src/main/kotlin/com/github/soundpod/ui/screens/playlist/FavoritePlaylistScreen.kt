@@ -40,8 +40,6 @@ import androidx.compose.material3.Text as ListText
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material3.Icon
 import com.github.soundpod.ui.screens.settings.subscreen.ListBackgroundEditor
-import com.github.soundpod.utils.tooltip
-import com.github.soundpod.ui.components.InfoLabel
 
 import com.github.soundpod.customart.hasCustomArtwork
 import com.github.soundpod.customart.rememberCustomArtworkPicker
