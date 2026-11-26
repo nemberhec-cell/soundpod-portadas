@@ -4,6 +4,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.*
@@ -65,9 +66,11 @@ fun PaperBoatAnimation(
     )
 
     val boatPainter = painterResource(id = R.drawable.paper_ship)
+    var thumbCenter by remember { mutableStateOf(Offset.Zero) }
 
+    Box(modifier = modifier.fillMaxWidth()) {
     Canvas(
-        modifier = modifier
+        modifier = Modifier
             .height(64.dp)
             .fillMaxWidth()
             .pointerInput(Unit) {
@@ -128,6 +131,7 @@ fun PaperBoatAnimation(
         val slope = if (thumbX.isNaN()) 0f else ampPx * mainFreq * cos(thumbX * mainFreq + pMain)
         val angleDegrees = if (slope.isNaN()) 0f else Math.toDegrees(atan(slope.toDouble())).toFloat()
 
+        if (thumbCenter != Offset(thumbX, thumbY)) thumbCenter = Offset(thumbX, thumbY)
         withTransform({
             if (!thumbX.isNaN() && !thumbY.isNaN()) {
                 translate(thumbX, thumbY)
@@ -141,5 +145,7 @@ fun PaperBoatAnimation(
                 draw(size = Size(boatSizePx, boatSizePx), colorFilter = ColorFilter.tint(color))
             }
         }
+    }
+    SeekPhotoDot(center = thumbCenter)
     }
 }
