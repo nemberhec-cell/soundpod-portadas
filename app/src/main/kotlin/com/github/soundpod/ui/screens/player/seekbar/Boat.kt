@@ -24,6 +24,7 @@ import kotlin.math.*
 
 @Composable
 fun PaperBoatAnimation(
+    mediaId: String? = null,
     value: Float,
     onValueChange: (Float) -> Unit,
     onValueChangeFinished: () -> Unit,
@@ -146,6 +147,6 @@ fun PaperBoatAnimation(
             }
         }
     }
-    SeekPhotoDot(center = thumbCenter)
+    SeekPhotoDot(center = thumbCenter, mediaId = mediaId)
     }
 }
