@@ -42,6 +42,7 @@ import com.github.soundpod.transaction
 import com.github.soundpod.ui.components.ParallaxScreenLayout
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Photo
 import com.github.soundpod.ui.screens.settings.subscreen.ListBackgroundEditor
 import com.github.soundpod.ui.components.TextFieldDialog
@@ -60,7 +61,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @UnstableApi
-@OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun OnlinePlaylistScreen(
     browseId: String,
