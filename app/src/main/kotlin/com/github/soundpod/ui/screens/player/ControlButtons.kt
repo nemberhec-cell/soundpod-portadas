@@ -41,6 +41,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
@@ -796,6 +797,28 @@ fun PlayerTopControl(
             )
         }
 
+        // Inside the player: photo button for the player background and
+        // the progress-dot image (photo or GIF).
+        var showPlayerBackgroundSettings by remember { mutableStateOf(false) }
+        IconButton(onClick = { showPlayerBackgroundSettings = true }) {
+            Icon(
+                imageVector = Icons.Default.Photo,
+                contentDescription = stringResource(R.string.customize_player_background),
+                tint = colorPalette.iconColor,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+        if (showPlayerBackgroundSettings) {
+            androidx.compose.material3.ModalBottomSheet(
+                onDismissRequest = { showPlayerBackgroundSettings = false },
+                sheetState = androidx.compose.material3.rememberModalBottomSheetState(
+                    skipPartiallyExpanded = true
+                )
+            ) {
+                com.github.soundpod.ui.screens.settings.subscreen.PlayerBackgroundEditor()
+            }
+        }
+
         var showDropDown by remember { mutableStateOf(false) }
 
         Box(
@@ -873,6 +896,19 @@ fun PlayerTopControl(
                     onClick = {
                         showDropDown = false
                         onTrackDetailsClick()
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(id = R.string.customize_player_background),
+                            color = colorPalette.text,
+                            style = typography.bodyLarge
+                        )
+                    },
+                    onClick = {
+                        showDropDown = false
+                        showPlayerBackgroundSettings = true
                     }
                 )
                 DropdownMenuItem(
