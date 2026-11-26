@@ -440,8 +440,8 @@ private fun queryPhonePlaylists(context: android.content.Context): List<PhonePla
 
 private fun countPlaylistTracks(context: android.content.Context, playlistId: Long): Int {
     val uri = android.content.ContentUris.withAppendedId(
-        MediaStore.Audio.Playlists.Members.CONTENT_URI, playlistId
-    )
+        MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, playlistId
+    ).buildUpon().appendPath("members").build()
     val cursor = try {
         context.contentResolver.query(uri, arrayOf(MediaStore.Audio.Playlists.Members._ID), null, null, null)
     } catch (_: Exception) { null } ?: return 0
@@ -451,8 +451,8 @@ private fun countPlaylistTracks(context: android.content.Context, playlistId: Lo
 private fun queryPhonePlaylistSongs(context: android.content.Context, playlistId: Long): List<Song> {
     val songs = mutableListOf<Song>()
     val uri = android.content.ContentUris.withAppendedId(
-        MediaStore.Audio.Playlists.Members.CONTENT_URI, playlistId
-    )
+        MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, playlistId
+    ).buildUpon().appendPath("members").build()
     val cursor = try {
         context.contentResolver.query(
             uri,
