@@ -4,6 +4,25 @@
     <string name="home">Home</string>
     <string name="songs">Songs</string>
     <string name="playlists">Playlists</string>
+    <string name="import">Import</string>
+    <string name="import_description">Transfer playlists manually: open the other app, share its playlist to SoundPod, or import a list from this phone or an .m3u file. Solo se puede leer lo que está en el teléfono y lo que compartes.</string>
+    <string name="import_from_apps">Music apps installed</string>
+    <string name="import_no_apps_found">No known music apps were found. You can still share a playlist link to SoundPod from any app.</string>
+    <string name="import_share_hint">Manual transfer: open the app, open one of its playlists and use its Share / Compartir option, choosing SoundPod. The playlist will be saved as one of your lists.</string>
+    <string name="import_open_app">Open app</string>
+    <string name="import_phone_lists">Phone audio lists</string>
+    <string name="import_permission_needed">Allow audio access to see the playlists stored on this phone.</string>
+    <string name="import_no_phone_lists">No phone playlists were found.</string>
+    <string name="import_transfer">Transfer</string>
+    <string name="import_m3u">Import .m3u file</string>
+    <string name="import_m3u_description">Choose an .m3u playlist file exported from another app. Its tracks are saved as a new list.</string>
+    <string name="import_pick_m3u">Choose .m3u file</string>
+    <string name="import_no_tracks">No tracks were found in that file.</string>
+    <string name="import_created">Transferred %1$d songs to a new list</string>
+    <string name="import_failed">Could not transfer that list.</string>
+    <string name="import_link">Playlist link</string>
+    <string name="import_link_description">Paste a YouTube Music playlist link and it will be saved as one of your lists.</string>
+
     <string name="artists">Artists</string>
     <string name="albums">Albums</string>
     <string name="related_albums">Related albums</string>
