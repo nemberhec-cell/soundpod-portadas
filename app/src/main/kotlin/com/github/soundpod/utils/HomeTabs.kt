@@ -14,5 +14,5 @@ enum class HomeTab(
     Artists(R.string.artists, showArtistsTabKey),
     Albums(R.string.albums, showAlbumsTabKey),
     Playlists(R.string.playlists, showPlaylistsTabKey),
-    Import(R.string.import, showImportTabKey)
+    Import(R.string.import_tab, showImportTabKey)
 }
