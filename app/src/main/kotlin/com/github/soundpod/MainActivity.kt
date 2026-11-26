@@ -314,7 +314,7 @@ class MainActivity : ComponentActivity() {
                                             query {
                                                 transaction {
                                                     val playlistId = db.insert(
-                                                        Playlist(name = page.title, browseId = browseId)
+                                                        Playlist(name = page.title ?: "Playlist", browseId = browseId)
                                                     )
                                                     fullPage.songsPage?.items
                                                         ?.map(Innertube.SongItem::asMediaItem)
