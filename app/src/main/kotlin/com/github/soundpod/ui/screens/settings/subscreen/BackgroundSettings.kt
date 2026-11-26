@@ -91,6 +91,28 @@ fun BackgroundSettingsContent() {
         }
     }
 
+    // --- Seek-bar dot image (photo or GIF) ---
+    var seekPhotoFile by rememberPreference(com.github.soundpod.ui.screens.player.seekbar.SEEK_BAR_PHOTO_KEY, "")
+    val seekPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            val fileName = withContext(Dispatchers.IO) {
+                CustomArtworkStore.copyPickedImage(context, uri, "seek_bar_dot")
+            }
+            if (fileName == null) {
+                toastCoverFailed(context)
+                return@launch
+            }
+            val previous = seekPhotoFile
+            seekPhotoFile = fileName
+            if (previous.isNotBlank() && previous != fileName) {
+                withContext(Dispatchers.IO) { CustomArtworkStore.delete(context, previous) }
+            }
+        }
+    }
+
     val presetBaseName = stringResource(id = R.string.preset)
 
     val presets = listOf(
@@ -137,6 +159,21 @@ fun BackgroundSettingsContent() {
                 selected = currentStyle == BackgroundStyles.MY_PHOTO,
                 onClick = { photoPicker.launch("image/*") }
             )
+            BackgroundOptionItem(
+                title = stringResource(id = R.string.seek_bar_dot_image),
+                description = stringResource(id = R.string.seek_bar_dot_image_description),
+                selected = seekPhotoFile.isNotBlank(),
+                onClick = { seekPicker.launch("image/*") }
+            )
+            if (seekPhotoFile.isNotBlank()) {
+                Row(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    TextButton(onClick = {
+                        val previous = seekPhotoFile
+                        seekPhotoFile = ""
+                        scope.launch { withContext(Dispatchers.IO) { CustomArtworkStore.delete(context, previous) } }
+                    }) { Text(text = stringResource(id = R.string.remove_photo)) }
+                }
+            }
             if (customPhotoFile.isNotBlank()) {
                 Row(modifier = Modifier.padding(horizontal = 16.dp)) {
                     TextButton(onClick = {
