@@ -664,7 +664,7 @@ fun PlayerControlBottom(
     }
 }
 
-@OptIn(UnstableApi::class)
+@OptIn(UnstableApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
 @UnstableApi
 @Composable
 fun PlayerTopControl(
