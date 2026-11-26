@@ -156,6 +156,117 @@ fun ListPhotoBackground() {
     )
 }
 
+/**
+ * Per-list background storage: every list (playlist, album, artist) keeps
+ * its own back + front photos, keyed by its id. Two lists that share a
+ * name are still different ids, so their backgrounds never collide.
+ */
+private fun listBackKey(listKey: String) = "$listKey:back_photo"
+private fun listBackDimKey(listKey: String) = "$listKey:back_dim"
+private fun listFrontKey(listKey: String) = "$listKey:front_photo"
+private fun listFrontDimKey(listKey: String) = "$listKey:front_dim"
+
+/** The back-layer photo file name for [listKey], or null when unset (or file missing). */
+@Composable
+fun rememberListBackgroundPhotoFileFor(listKey: String?): String? {
+    if (listKey == null) return null
+    val customPhotoFile by rememberPreference(listBackKey(listKey), "")
+    val context = LocalContext.current
+    val file = customPhotoFile.takeIf { it.isNotBlank() }?.let {
+        CustomArtworkStore.fileFor(context, it)
+    }
+    return if (file != null && file.exists()) customPhotoFile else null
+}
+
+/** The front-layer photo file name for [listKey], or null when unset (or file missing). */
+@Composable
+fun rememberListFrontPhotoFor(listKey: String?): String? {
+    if (listKey == null) return null
+    val customPhotoFile by rememberPreference(listFrontKey(listKey), "")
+    val context = LocalContext.current
+    val file = customPhotoFile.takeIf { it.isNotBlank() }?.let {
+        CustomArtworkStore.fileFor(context, it)
+    }
+    return if (file != null && file.exists()) customPhotoFile else null
+}
+
+/** Dim used over the front photo layer of [listKey]. */
+@Composable
+fun rememberListFrontDimFor(listKey: String?): Int {
+    if (listKey == null) return 55
+    val dimPercent by rememberPreference(listFrontDimKey(listKey), 55)
+    return dimPercent.coerceIn(0, 100)
+}
+
+/** Picker + dim controls for the back layer of the list identified by [listKey]. */
+@Composable
+fun rememberListBackgroundPickerFor(listKey: String?): HomePhotoPicker? {
+    if (listKey == null) return null
+    val pick = rememberPhotoPickerFor(listBackKey(listKey), listKey + "_back")
+    val photo by rememberPreference(listBackKey(listKey), "")
+    var dim by rememberPreference(listBackDimKey(listKey), 55)
+    val context = LocalContext.current
+    return HomePhotoPicker(
+        photo = photo,
+        pick = pick,
+        remove = { removePhotoFor(context, listBackKey(listKey)) },
+        dim = dim,
+        setDim = {
+            dim = it
+            context.preferences.edit { putInt(listBackDimKey(listKey), it) }
+        }
+    )
+}
+
+/** Picker + dim controls for the front layer of the list identified by [listKey]. */
+@Composable
+fun rememberListFrontPickerFor(listKey: String?): HomePhotoPicker? {
+    if (listKey == null) return null
+    val pick = rememberPhotoPickerFor(listFrontKey(listKey), listKey + "_front")
+    val photo by rememberPreference(listFrontKey(listKey), "")
+    var dim by rememberPreference(listFrontDimKey(listKey), 55)
+    val context = LocalContext.current
+    return HomePhotoPicker(
+        photo = photo,
+        pick = pick,
+        remove = { removePhotoFor(context, listFrontKey(listKey)) },
+        dim = dim,
+        setDim = {
+            dim = it
+            context.preferences.edit { putInt(listFrontDimKey(listKey), it) }
+        }
+    )
+}
+
+/**
+ * Full-screen back-layer background for the list identified by [listKey]
+ * (its own photo, independent from the menu and from other lists).
+ */
+@Composable
+fun ListPhotoBackgroundFor(listKey: String?) {
+    val customPhotoFile = rememberListBackgroundPhotoFileFor(listKey)
+    if (customPhotoFile.isNullOrBlank()) return
+    val dimPercent by rememberPreference(listBackDimKey(listKey.toString()), 55)
+    val baseBackground = LocalAppearance.current.colorPalette.background0
+    val scrimAlpha = dimPercent.coerceIn(0, 100) / 100f
+
+    CustomPhotoBackground(
+        fileName = customPhotoFile,
+        modifier = Modifier.fillMaxSize()
+    )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    0f to baseBackground.copy(alpha = scrimAlpha),
+                    0.35f to baseBackground.copy(alpha = scrimAlpha * 0.8f),
+                    1f to baseBackground.copy(alpha = scrimAlpha)
+                )
+            )
+    )
+}
+
 /** The list back-layer photo file name, or null when unset (or file missing). */
 @Composable
 fun rememberListBackgroundPhotoFile(): String? {
