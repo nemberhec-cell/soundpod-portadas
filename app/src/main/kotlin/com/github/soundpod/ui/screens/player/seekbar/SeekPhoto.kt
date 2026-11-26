@@ -17,30 +17,28 @@ import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import com.github.soundpod.customart.CustomArtworkStore
-import com.github.soundpod.utils.rememberPreference
+import com.github.soundpod.customart.rememberCustomArtworkFileName
 
-/** Returns the chosen photo/GIF file, or null when none was chosen. */
+/** Per-song seek-dot image key in CustomArtwork table. */
+fun seekDotKey(mediaId: String?) = mediaId?.takeIf { it.isNotBlank() }?.let { "seekdot:$it" }
+
+/** Returns this song's photo/GIF file, or null when this song has none. */
 @Composable
-fun rememberSeekPhoto(): java.io.File? {
+fun rememberSeekPhoto(mediaId: String?): java.io.File? {
     val context = LocalContext.current
-    val seekPhotoFile by rememberPreference(SEEK_BAR_PHOTO_KEY, "")
-    return seekPhotoFile.takeIf { it.isNotBlank() }?.let {
-        CustomArtworkStore.fileFor(context, it)
-    }?.takeIf { it.exists() }
+    val fileName by rememberCustomArtworkFileName(seekDotKey(mediaId))
+    return fileName?.let { CustomArtworkStore.fileFor(context, it) }?.takeIf { it.exists() }
 }
 
-/**
- * Your photo or GIF as the dot, centered at [center] within the parent box.
- * Parent must be a Box/BoxWithConstraints filling the same area as the canvas.
- * Returns true when a photo was drawn (caller should skip its own color dot).
- */
+/** Your photo or GIF as the dot for THIS song, centered at [center]. */
 @Composable
 fun SeekPhotoDot(
     center: Offset,
+    mediaId: String?,
     dotSize: androidx.compose.ui.unit.Dp = 28.dp
 ): Boolean {
     val context = LocalContext.current
-    val seekPhoto = rememberSeekPhoto()
+    val seekPhoto = rememberSeekPhoto(mediaId)
     if (seekPhoto == null) return false
     Box(
         modifier = Modifier
