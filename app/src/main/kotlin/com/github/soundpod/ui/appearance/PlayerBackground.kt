@@ -74,11 +74,15 @@ fun PlayerBackground(
     val isDark = colorPalette.isDark
     val baseBackground = colorPalette.background0
     val targetBackgroundColorRaw = remember(clusters, isDark, currentStyle) {
-        if (currentStyle == BackgroundStyles.OFF) {
-            baseBackground
-        } else {
-            val adapted = clusters.surface.adaptToTheme(isDark)
-            adapted.copy(alpha = if (isDark) 0.35f else 0.25f).compositeOver(baseBackground)
+        when {
+            currentStyle == BackgroundStyles.OFF -> baseBackground
+            // "My photo": the photo itself fills the screen, so only a slight
+            // tint goes under it (it used to cover the photo entirely).
+            currentStyle == BackgroundStyles.MY_PHOTO -> baseBackground
+            else -> {
+                val adapted = clusters.surface.adaptToTheme(isDark)
+                adapted.copy(alpha = if (isDark) 0.35f else 0.25f).compositeOver(baseBackground)
+            }
         }
     }
     val targetBackgroundColor by animateColorAsState(
@@ -123,9 +127,22 @@ fun PlayerBackground(
                     )
                 }
                 BackgroundStyles.MY_PHOTO -> {
+                    // Your photo (or GIF) fills the whole player screen when
+                    // the song is open, so the text stays readable.
                     com.github.soundpod.customart.CustomPhotoBackground(
                         fileName = customPhotoFile.takeIf { it.isNotBlank() },
                         modifier = Modifier.fillMaxSize()
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                androidx.compose.ui.graphics.Brush.verticalGradient(
+                                    0f to baseBackground.copy(alpha = if (isDark) 0.55f else 0.45f),
+                                    0.4f to baseBackground.copy(alpha = if (isDark) 0.35f else 0.25f),
+                                    1f to baseBackground.copy(alpha = if (isDark) 0.55f else 0.45f)
+                                )
+                            )
                     )
                 }
                 else -> {
