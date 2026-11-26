@@ -326,6 +326,8 @@
     <string name="background_dim_description">How much the app color covers your photo (higher = more readable text)</string>
     <string name="customize_background">Customize background</string>
     <string name="customize_list_background">Customize list background</string>
+    <string name="seek_bar_dot_image">Seek bar dot image</string>
+    <string name="seek_bar_dot_image_description">Your photo or GIF on the moving dot of the progress bar</string>
     <string name="list_background_description">This list has its own back and front photos, separate from other lists and the main menu</string>
     <string name="home_background_only">Home background (main menu)</string>
     <string name="list_background_only">List background (playlists, albums, artists)</string>
