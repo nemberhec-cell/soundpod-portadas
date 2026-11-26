@@ -26,7 +26,8 @@ import com.github.core.visuals.extractColorClusters
 import com.github.soundpod.utils.rememberPreference
 
 const val PLAYER_BACKGROUND_STYLE_KEY = "player_background_style"
-const val PLAYER_BACKGROUND_PHOTO_KEY = "player_background_photo_file" 
+const val PLAYER_BACKGROUND_PHOTO_KEY = "player_background_photo_file"
+const val PLAYER_BACKGROUND_DIM_KEY = "player_background_dim"
 
 object BackgroundStyles {
     const val OFF = -1
@@ -49,6 +50,7 @@ fun PlayerBackground(
 ) {
     val currentStyle by rememberPreference(PLAYER_BACKGROUND_STYLE_KEY, BackgroundStyles.CROSS_FADE)
     val customPhotoFile by rememberPreference(PLAYER_BACKGROUND_PHOTO_KEY, "")
+    val customPhotoDim by rememberPreference(PLAYER_BACKGROUND_DIM_KEY, 55)
     val (colorPalette) = LocalAppearance.current
     val context = LocalContext.current
 
@@ -133,14 +135,15 @@ fun PlayerBackground(
                         fileName = customPhotoFile.takeIf { it.isNotBlank() },
                         modifier = Modifier.fillMaxSize()
                     )
+                    val photoScrim = customPhotoDim.coerceIn(0, 100) / 100f
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(
                                 androidx.compose.ui.graphics.Brush.verticalGradient(
-                                    0f to baseBackground.copy(alpha = if (isDark) 0.55f else 0.45f),
-                                    0.4f to baseBackground.copy(alpha = if (isDark) 0.35f else 0.25f),
-                                    1f to baseBackground.copy(alpha = if (isDark) 0.55f else 0.45f)
+                                    0f to baseBackground.copy(alpha = photoScrim),
+                                    0.4f to baseBackground.copy(alpha = photoScrim * 0.7f),
+                                    1f to baseBackground.copy(alpha = photoScrim)
                                 )
                             )
                     )
