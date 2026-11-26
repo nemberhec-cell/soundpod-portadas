@@ -37,6 +37,7 @@ import kotlin.math.sin
 
 @Composable
 fun SimpleWave(
+    mediaId: String? = null,
     value: Float,
     onValueChange: (Float) -> Unit,
     onValueChangeFinished: () -> Unit,
@@ -202,6 +203,6 @@ fun SimpleWave(
         }
     }
     // Your photo/GIF as the dot (only when chosen; else the color dot above shows)
-    SeekPhotoDot(center = thumbCenter)
+    SeekPhotoDot(center = thumbCenter, mediaId = mediaId)
     }
 }
