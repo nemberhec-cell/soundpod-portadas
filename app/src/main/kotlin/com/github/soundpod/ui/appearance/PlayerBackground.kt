@@ -46,10 +46,17 @@ fun PlayerBackground(
     modifier: Modifier = Modifier,
     isPlaying: Boolean = false,
     expandProgress: Float = 0f,
+    mediaId: String? = null,
     content: @Composable () -> Unit
 ) {
     val currentStyle by rememberPreference(PLAYER_BACKGROUND_STYLE_KEY, BackgroundStyles.CROSS_FADE)
-    val customPhotoFile by rememberPreference(PLAYER_BACKGROUND_PHOTO_KEY, "")
+    // Per-song background photo: "playerbg:<mediaId>" in CustomArtwork.
+    // Falls back to the legacy global photo only while the song has none.
+    val legacyPhotoFile by rememberPreference(PLAYER_BACKGROUND_PHOTO_KEY, "")
+    val songPhotoFile by com.github.soundpod.customart.rememberCustomArtworkFileName(
+        mediaId?.takeIf { it.isNotBlank() }?.let { "playerbg:$it" }
+    )
+    val customPhotoFile = songPhotoFile ?: legacyPhotoFile
     val customPhotoDim by rememberPreference(PLAYER_BACKGROUND_DIM_KEY, 55)
     val (colorPalette) = LocalAppearance.current
     val context = LocalContext.current
