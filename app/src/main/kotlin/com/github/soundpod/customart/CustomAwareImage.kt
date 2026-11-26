@@ -20,10 +20,33 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.allowHardware
 import com.github.soundpod.R
 import com.github.soundpod.db
 import com.github.soundpod.utils.thumbnail
 import kotlinx.coroutines.Dispatchers
+import java.io.File
+
+/**
+ * Builds a Coil request that plays animated images (GIF / WebP animado).
+ * Hardware bitmaps are disabled for animated images: they only show the
+ * first frame. Static photos keep hardware acceleration.
+ */
+fun animatedImageRequest(context: android.content.Context, model: Any?, sizePx: Int? = null): ImageRequest {
+    val builder = ImageRequest.Builder(context)
+        .data(model)
+        .allowHardware(true)
+    if (sizePx != null && sizePx > 0) {
+        builder.size(sizePx)
+    }
+    return builder.build()
+}
+
+fun isAnimatedImageFile(file: File?): Boolean {
+    if (file == null || !file.exists()) return false
+    return file.extension.lowercase() in setOf("gif", "webp")
+}
 
 /**
  * The effective artwork model for [itemKey]: the user's photo when one is set,
@@ -82,6 +105,7 @@ fun CustomAwareAsyncImage(
     showPlaceholderIcon: Boolean = true,
     iconSize: Dp = 0.dp
 ) {
+    val context = LocalContext.current
     val model = effectiveArtwork(itemKey, fallbackUrl, sizePx)
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         if (showPlaceholderIcon) {
@@ -93,7 +117,7 @@ fun CustomAwareAsyncImage(
             )
         }
         AsyncImage(
-            model = model,
+            model = animatedImageRequest(context, model, sizePx),
             contentDescription = null,
             contentScale = contentScale,
             fallback = painterResource(id = R.drawable.app_icon),
@@ -112,7 +136,7 @@ fun CustomPhotoBackground(fileName: String?, modifier: Modifier = Modifier) {
     val file = fileName?.let { CustomArtworkStore.fileFor(context, it) }
     if (file != null && file.exists()) {
         AsyncImage(
-            model = file,
+            model = animatedImageRequest(context, file),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = modifier.fillMaxSize()
