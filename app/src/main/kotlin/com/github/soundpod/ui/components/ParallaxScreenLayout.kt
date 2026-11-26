@@ -66,10 +66,10 @@ import androidx.compose.ui.unit.dp
 import com.github.core.ui.LocalAppearance
 import com.github.soundpod.LocalPlayerPadding
 import com.github.soundpod.customart.CustomPhotoBackground
-import com.github.soundpod.ui.appearance.ListPhotoBackground
-import com.github.soundpod.ui.appearance.rememberListBackgroundPhotoFile
-import com.github.soundpod.ui.appearance.rememberListFrontDim
-import com.github.soundpod.ui.appearance.rememberListFrontPhoto
+import com.github.soundpod.ui.appearance.ListPhotoBackgroundFor
+import com.github.soundpod.ui.appearance.rememberListBackgroundPhotoFileFor
+import com.github.soundpod.ui.appearance.rememberListFrontDimFor
+import com.github.soundpod.ui.appearance.rememberListFrontPhotoFor
 import com.github.soundpod.R
 import com.github.soundpod.utils.isLandscape
 import kotlinx.coroutines.launch
@@ -86,6 +86,7 @@ fun ParallaxScreenLayout(
     thumbnailUrl: String? = null,
     thumbnailItemKey: String? = null,
     onThumbnailClick: (() -> Unit)? = null,
+    listBackgroundKey: String? = null,
     footerHeaderContent: @Composable (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
     onBackClick: (() -> Unit)? = null,
@@ -100,10 +101,11 @@ fun ParallaxScreenLayout(
 
     val statusBarHeight = with(density) { WindowInsets.statusBars.getTop(this).toDp() }
 
-    // List layers (playlists, albums, artists): independent back/front photos.
-    val listBackPhoto = rememberListBackgroundPhotoFile()
-    val listFrontPhoto = rememberListFrontPhoto()
-    val listFrontDim = rememberListFrontDim()
+    // List layers: THIS list's own back/front photos, keyed by its id, so
+    // one list's background never shows up in another list.
+    val listBackPhoto = rememberListBackgroundPhotoFileFor(listBackgroundKey)
+    val listFrontPhoto = rememberListFrontPhotoFor(listBackgroundKey)
+    val listFrontDim = rememberListFrontDimFor(listBackgroundKey)
     val hasListBackPhoto = listBackPhoto != null
     val hasListFrontPhoto = listFrontPhoto != null
     val topBarHeight = remember(statusBarHeight) { 64.dp + statusBarHeight }
@@ -122,7 +124,7 @@ fun ParallaxScreenLayout(
         ) {
             // Back layer photo behind the whole list screen.
             if (hasListBackPhoto) {
-                ListPhotoBackground()
+                ListPhotoBackgroundFor(listBackgroundKey)
             }
             val fullHeightPx = constraints.maxHeight.toFloat()
             // Dynamic peek height: approximately 45% of screen height, but with sensible bounds
