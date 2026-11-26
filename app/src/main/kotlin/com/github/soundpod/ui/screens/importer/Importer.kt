@@ -214,12 +214,12 @@ fun ImportScreen() {
     ) {
         item {
             Text(
-                text = stringResource(R.string.import),
+                text = stringResource(R.string.import_tab),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = stringResource(R.string.import_description),
+                text = stringResource(R.string.import_tab_description),
                 style = MaterialTheme.typography.bodyMedium
             )
             if (status != null) {
