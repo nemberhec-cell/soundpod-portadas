@@ -1053,6 +1053,7 @@ private fun PlayerSeekBarDefault(
             }
 
             SeekBar(
+                mediaId = mediaId,
                 value = currentDisplayPosition,
                 minimumValue = 0,
                 maximumValue = duration,
@@ -1122,6 +1123,7 @@ private fun WaveAnimation(
     ) {
 
         SimpleWave(
+            mediaId = mediaId,
             value = scrubbingPosition ?: position.toFloat(),
             onValueChange = { scrubbingPosition = it },
             onValueChangeFinished = {
@@ -1175,6 +1177,7 @@ private fun BoatAnimation(
     ) {
 
         PaperBoatAnimation(
+            mediaId = mediaId,
             value = scrubbingPosition ?: position.toFloat(),
             onValueChange = { scrubbingPosition = it },
             onValueChangeFinished = {
