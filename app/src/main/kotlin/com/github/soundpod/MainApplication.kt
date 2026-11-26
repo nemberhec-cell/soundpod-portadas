@@ -12,7 +12,6 @@ import coil3.request.CachePolicy
 import coil3.request.crossfade
 import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
-import coil3.gif.WebPAnimatedDecoder
 import com.github.innertube.Innertube
 import com.github.soundpod.enums.CoilDiskCacheMaxSize
 import com.github.soundpod.utils.coilDiskCacheMaxSizeKey
@@ -50,7 +49,6 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 // so Coil's own decoders go first.
                 add(AnimatedImageDecoder.Factory())
                 add(GifDecoder.Factory())
-                add(WebPAnimatedDecoder.Factory())
                 add { chain ->
                     val request = if (preferences.getBoolean(pauseImageCacheKey, false)) {
                         chain.request.newBuilder()
