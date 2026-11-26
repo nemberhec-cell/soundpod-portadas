@@ -664,7 +664,7 @@ fun PlayerControlBottom(
     }
 }
 
-@OptIn(UnstableApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(UnstableApi::class)
 @UnstableApi
 @Composable
 fun PlayerTopControl(
@@ -809,14 +809,9 @@ fun PlayerTopControl(
             )
         }
         if (showPlayerBackgroundSettings) {
-            androidx.compose.material3.ModalBottomSheet(
-                onDismissRequest = { showPlayerBackgroundSettings = false },
-                sheetState = androidx.compose.material3.rememberModalBottomSheetState(
-                    skipPartiallyExpanded = true
-                )
-            ) {
-                com.github.soundpod.ui.screens.settings.subscreen.PlayerBackgroundEditor()
-            }
+            com.github.soundpod.ui.screens.settings.subscreen.PlayerBackgroundSheet(
+                onDismiss = { showPlayerBackgroundSettings = false }
+            )
         }
 
         var showDropDown by remember { mutableStateOf(false) }
