@@ -99,6 +99,9 @@ fun SharedPlayer(
     var currentArtworkUrl by remember {
         mutableStateOf(player?.currentMediaItem?.mediaMetadata?.artworkUri?.toString())
     }
+    var currentMediaId by remember {
+        mutableStateOf(player?.currentMediaItem?.mediaId)
+    }
 
     var hasMediaItems by remember {
         mutableStateOf((player?.mediaItemCount ?: 0) > 0)
@@ -111,6 +114,7 @@ fun SharedPlayer(
 
         val listener = object : Player.Listener {
             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                currentMediaId = mediaItem?.mediaId
                 val metadata = mediaItem?.mediaMetadata
                 currentArtworkUrl = metadata?.artworkUri?.toString()
                     ?: metadata?.extras?.getString("artwork_url")
@@ -130,6 +134,7 @@ fun SharedPlayer(
 
         hasMediaItems = player.mediaItemCount > 0
         isPlaying = player.isPlaying
+        currentMediaId = player.currentMediaItem?.mediaId
         currentArtworkUrl = player.currentMediaItem?.mediaMetadata?.artworkUri?.toString()
             ?: player.currentMediaItem?.mediaMetadata?.extras?.getString("artwork_url")
             ?: ""
@@ -227,7 +232,8 @@ fun SharedPlayer(
                 PlayerBackground(
                     thumbnailUrl = currentArtworkUrl,
                     isPlaying = isPlaying,
-                    expandProgress = expandProgress
+                    expandProgress = expandProgress,
+                    mediaId = currentMediaId
                 ) {
                     Box(modifier = Modifier.fillMaxSize()) {
 
