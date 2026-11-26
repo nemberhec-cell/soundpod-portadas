@@ -19,8 +19,6 @@ import com.github.soundpod.R
 import com.github.soundpod.ui.appearance.HomePhotoPicker
 import com.github.soundpod.ui.appearance.rememberHomeBackgroundPicker
 import com.github.soundpod.ui.appearance.rememberHomeFrontPicker
-import com.github.soundpod.ui.appearance.rememberListBackgroundPicker
-import com.github.soundpod.ui.appearance.rememberListFrontPicker
 import com.github.soundpod.ui.common.IconSource
 import com.github.soundpod.ui.screens.settings.SettingsColumn
 import com.github.soundpod.ui.screens.settings.SettingsGroup
@@ -32,34 +30,30 @@ import com.github.soundpod.ui.screens.settings.SettingsGroup
  * or adjust how dimmed it is.
  */
 @Composable
-fun HomeBackgroundSettingsContent(forLists: Boolean = false) {
+fun HomeBackgroundSettingsContent() {
     val backPicker = rememberHomeBackgroundPicker()
     val frontPicker = rememberHomeFrontPicker()
-    val listBackPicker = rememberListBackgroundPicker()
-    val listFrontPicker = rememberListFrontPicker()
-    val activeBackPicker = if (forLists) listBackPicker else backPicker
-    val activeFrontPicker = if (forLists) listFrontPicker else frontPicker
 
     Column {
         SettingsGroup(
-            title = stringResource(id = if (forLists) R.string.list_background else R.string.home_background)
+            title = stringResource(id = R.string.home_background)
         ) {
             LayerSettings(
-                title = stringResource(id = if (forLists) R.string.list_back_layer else R.string.home_back_layer),
-                description = stringResource(id = if (forLists) R.string.list_back_layer_description else R.string.home_back_layer_description),
-                picker = activeBackPicker
+                title = stringResource(id = R.string.home_back_layer),
+                description = stringResource(id = R.string.home_back_layer_description),
+                picker = backPicker
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         SettingsGroup(
-            title = stringResource(id = if (forLists) R.string.list_front_layer else R.string.home_front_layer)
+            title = stringResource(id = R.string.home_front_layer)
         ) {
             LayerSettings(
-                title = stringResource(id = if (forLists) R.string.list_front_layer_photo else R.string.home_front_layer_photo),
-                description = stringResource(id = if (forLists) R.string.list_front_layer_description else R.string.home_front_layer_description),
-                picker = activeFrontPicker
+                title = stringResource(id = R.string.home_front_layer_photo),
+                description = stringResource(id = R.string.home_front_layer_description),
+                picker = frontPicker
             )
         }
 
@@ -68,7 +62,7 @@ fun HomeBackgroundSettingsContent(forLists: Boolean = false) {
 }
 
 @Composable
-private fun LayerSettings(
+fun LayerSettings(
     title: String,
     description: String,
     picker: HomePhotoPicker
