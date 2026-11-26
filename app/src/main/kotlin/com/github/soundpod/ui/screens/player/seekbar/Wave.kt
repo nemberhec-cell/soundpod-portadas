@@ -9,6 +9,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -18,6 +20,8 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -47,6 +51,7 @@ fun SimpleWave(
     var dragValue by remember { mutableFloatStateOf(value) }
     var lastDragValue by remember { mutableFloatStateOf(value) }
     var isDraggingForward by remember { mutableStateOf(true) }
+    var thumbCenter by remember { mutableStateOf(Offset.Zero) }
 
     LaunchedEffect(value) {
         if (!isDragging) {
@@ -68,8 +73,9 @@ fun SimpleWave(
         label = "wave_phase"
     )
 
+    Box(modifier = modifier.fillMaxWidth()) {
     Canvas(
-        modifier = modifier
+        modifier = Modifier
             .height(40.dp)
             .fillMaxWidth()
             .pointerInput(Unit) {
@@ -187,11 +193,15 @@ fun SimpleWave(
             height / 2
         }
         if (!thumbX.isNaN() && !thumbY.isNaN()) {
+            if (thumbCenter != Offset(thumbX, thumbY)) thumbCenter = Offset(thumbX, thumbY)
             drawCircle(
                 color = color,
                 radius = 8.dp.toPx(),
                 center = Offset(thumbX, thumbY)
             )
         }
+    }
+    // Your photo/GIF as the dot (only when chosen; else the color dot above shows)
+    SeekPhotoDot(center = thumbCenter)
     }
 }
