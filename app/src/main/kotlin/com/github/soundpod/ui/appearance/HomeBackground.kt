@@ -365,7 +365,7 @@ private fun rememberPhotoPickerFor(prefKey: String, itemKey: String): () -> Unit
         }
     }
 
-    return { launcher.launch("image/*") }
+    return { launcher.launch(arrayOf("image/*", "image/gif", "image/webp")) }
 }
 
 /** Removes the photo stored under [prefKey]. */
