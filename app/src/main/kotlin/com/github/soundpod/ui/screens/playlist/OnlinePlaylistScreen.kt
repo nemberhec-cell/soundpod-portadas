@@ -40,6 +40,10 @@ import com.github.soundpod.models.SongPlaylistMap
 import com.github.soundpod.query
 import com.github.soundpod.transaction
 import com.github.soundpod.ui.components.ParallaxScreenLayout
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material.icons.filled.Photo
+import com.github.soundpod.ui.screens.settings.subscreen.ListBackgroundEditor
 import com.github.soundpod.ui.components.TextFieldDialog
 import com.github.soundpod.utils.ScreenCache
 import com.github.soundpod.utils.asMediaItem
@@ -72,6 +76,7 @@ fun OnlinePlaylistScreen(
     var isImportingPlaylist by rememberSaveable { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
+    var showListBackgroundSettings by remember { mutableStateOf(false) }
     val playlistCoverKey = "playlist:$browseId"
     val playlistHasCustomCover = hasCustomArtwork(playlistCoverKey)
     val pickCover = rememberCustomArtworkPicker(
@@ -186,6 +191,15 @@ fun OnlinePlaylistScreen(
             )
         },
         actions = {
+            IconButton(
+                onClick = { showListBackgroundSettings = true }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Photo,
+                    contentDescription = stringResource(R.string.customize_list_background),
+                    tint = colorPalette.text
+                )
+            }
             if (playlistPage != null) {
                 val isBookmarked = localPlaylist != null
                 IconButton(
@@ -268,6 +282,7 @@ fun OnlinePlaylistScreen(
         thumbnailUrl = playlistPage?.thumbnail?.url,
         thumbnailItemKey = playlistCoverKey,
         onThumbnailClick = { pickCover(playlistCoverKey) },
+        listBackgroundKey = playlistCoverKey,
         headerTitle = playlistPage?.title.orEmpty(),
         content = {
             OnlinePlaylistSongs(
@@ -280,6 +295,15 @@ fun OnlinePlaylistScreen(
         },
         onBackClick = onBack,
     )
+
+    if (showListBackgroundSettings) {
+        ModalBottomSheet(
+            onDismissRequest = { showListBackgroundSettings = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ) {
+            ListBackgroundEditor(listKey = playlistCoverKey)
+        }
+    }
 
     if (isImportingPlaylist) {
         TextFieldDialog(
