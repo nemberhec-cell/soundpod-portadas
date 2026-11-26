@@ -387,6 +387,9 @@ interface Database {
     @Query("SELECT * FROM Playlist WHERE browseId = :browseId")
     fun playlist(browseId: String): Flow<Playlist?>
 
+    @Query("SELECT * FROM Playlist WHERE browseId = :browseId")
+    suspend fun playlistOnce(browseId: String): Playlist?
+
     @Query("SELECT * FROM Playlist WHERE id = :id")
     fun playlist(id: Long): Flow<Playlist?>
 
