@@ -222,12 +222,6 @@ class MainActivity : ComponentActivity() {
                                         putExtra("SCREEN_ID", SettingsDestinations.HOME_BACKGROUND)
                                     }
                                     context.startActivity(intent)
-                                },
-                                onNavigateToListBackground = {
-                                    val intent = Intent(context, SettingsActivity::class.java).apply {
-                                        putExtra("SCREEN_ID", SettingsDestinations.LIST_BACKGROUND)
-                                    }
-                                    context.startActivity(intent)
                                 }
                             )
                         }
