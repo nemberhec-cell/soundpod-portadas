@@ -58,6 +58,13 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.github.innertube.Innertube
 import com.github.innertube.requests.playlistPage
+import com.github.soundpod.db
+import com.github.soundpod.models.Playlist
+import com.github.soundpod.models.SongPlaylistMap
+import com.github.soundpod.query
+import com.github.soundpod.transaction
+import com.github.soundpod.utils.completed
+import com.github.innertube.utils.plus
 import com.github.innertube.requests.song
 import com.github.soundpod.enums.AppThemeColor
 import com.github.soundpod.models.LocalMenuState
@@ -293,9 +300,39 @@ class MainActivity : ComponentActivity() {
                                             )
                                         }
                                     }
-                            } else navController.navigate(
-                                route = Routes.Playlist(id = browseId)
-                            )
+                            } else {
+                                // Shared from YouTube Music / a browser link:
+                                // open the online playlist AND save it as one of
+                                // the user's own lists, so it stays as "one more
+                                // list" with its own cover and background.
+                                withContext(Dispatchers.IO) {
+                                    val page = Innertube.playlistPage(browseId = browseId)?.getOrNull()
+                                    if (page != null) {
+                                        val fullPage = Result.success(page).completed()?.getOrNull() ?: page
+                                        val alreadySaved = db.playlistOnce(browseId)
+                                        if (alreadySaved == null) {
+                                            query {
+                                                transaction {
+                                                    val playlistId = db.insert(
+                                                        Playlist(name = page.title, browseId = browseId)
+                                                    )
+                                                    fullPage.songsPage?.items
+                                                        ?.map(Innertube.SongItem::asMediaItem)
+                                                        ?.onEach(db::insert)
+                                                        ?.mapIndexed { index, mediaItem ->
+                                                            SongPlaylistMap(
+                                                                songId = mediaItem.mediaId,
+                                                                playlistId = playlistId,
+                                                                position = index
+                                                            )
+                                                        }?.let(db::insertSongPlaylistMaps)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                navController.navigate(route = Routes.Playlist(id = browseId))
+                            }
                         }
 
                         "channel", "c" -> uri.lastPathSegment?.let { channelId ->
