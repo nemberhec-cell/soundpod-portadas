@@ -107,6 +107,8 @@ dependencies {
     implementation(libs.compose.activity)
     implementation(libs.coil.compose)
     implementation(libs.coil.network)
+    // GIF / WebP animado: hace que los fondos y portadas con GIF se muevan
+    implementation(libs.coil.gif)
     implementation(libs.compose.foundation)
     implementation(libs.material)
     implementation(libs.compose.material.icons)
