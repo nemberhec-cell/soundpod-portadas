@@ -1,5 +1,3 @@
-@file:kotlin.OptIn(ExperimentalAnimationApi::class)
-
 package com.github.soundpod.ui.screens.player
 
 import android.content.ActivityNotFoundException
@@ -8,7 +6,6 @@ import android.media.audiofx.AudioEffect
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.EaseInOutSine
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -41,7 +38,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
@@ -83,7 +79,6 @@ import com.github.core.ui.LocalAppearance
 import com.github.soundpod.LocalPlayerServiceBinder
 import com.github.soundpod.R
 import com.github.soundpod.db
-import com.github.soundpod.utils.PlayerLayout
 import com.github.soundpod.enums.ProgressBar
 import com.github.soundpod.models.Song
 import com.github.soundpod.query
@@ -92,6 +87,7 @@ import com.github.soundpod.ui.screens.player.seekbar.PaperBoatAnimation
 import com.github.soundpod.ui.screens.player.seekbar.SeekBar
 import com.github.soundpod.ui.screens.player.seekbar.SimpleWave
 import com.github.soundpod.ui.styling.Dimensions
+import com.github.soundpod.utils.PlayerLayout
 import com.github.soundpod.utils.forceSeekToNext
 import com.github.soundpod.utils.forceSeekToPrevious
 import com.github.soundpod.utils.formatAsDuration
@@ -141,7 +137,7 @@ fun AnimatedIconButton(
 
 @Suppress("KotlinConstantConditions")
 @Composable
-private fun HoldableAnimatedIconButton(
+fun HoldableAnimatedIconButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     onHold: (suspend () -> Unit)? = null,
@@ -591,18 +587,35 @@ fun PlayerControlBottom(
             contentAlignment = Alignment.Center,
             modifier = Modifier.size(if (playerLayout == PlayerLayout.SoundPod) 84.dp else 72.dp)
         ) {
-            if (playerLayout == PlayerLayout.SoundPod) {
-                NewPlayPauseButton(
-                    playing = shouldBePlaying,
-                    isBuffering = isBuffering, // Passed directly
-                    onClick = onPlayPauseClick
-                )
-            } else if (playerLayout == PlayerLayout.SamsungMusic) {
-                PlayPauseButton(
-                    playing = shouldBePlaying,
-                    isBuffering = isBuffering, // Passed directly
-                    onClick = onPlayPauseClick
-                )
+            when (playerLayout) {
+                PlayerLayout.SoundPod -> {
+                    NewPlayPauseButton(
+                        playing = shouldBePlaying,
+                        isBuffering = isBuffering,
+                        onClick = onPlayPauseClick
+                    )
+                }
+                PlayerLayout.SamsungMusic -> {
+                    PlayPauseButton(
+                        playing = shouldBePlaying,
+                        isBuffering = isBuffering,
+                        onClick = onPlayPauseClick
+                    )
+                }
+                PlayerLayout.AppleMusic -> {
+                    PlayPauseButton(
+                        playing = shouldBePlaying,
+                        isBuffering = isBuffering,
+                        onClick = onPlayPauseClick
+                    )
+                }
+                PlayerLayout.YoutubeMusic -> {
+                    NewPlayPauseButton(
+                        playing = shouldBePlaying,
+                        isBuffering = isBuffering,
+                        onClick = onPlayPauseClick
+                    )
+                }
             }
         }
 
@@ -797,23 +810,6 @@ fun PlayerTopControl(
             )
         }
 
-        // Inside the player: photo button for the player background and
-        // the progress-dot image (photo or GIF).
-        var showPlayerBackgroundSettings by remember { mutableStateOf(false) }
-        IconButton(onClick = { showPlayerBackgroundSettings = true }) {
-            Icon(
-                imageVector = Icons.Default.Photo,
-                contentDescription = stringResource(R.string.customize_player_background),
-                tint = colorPalette.iconColor,
-                modifier = Modifier.size(22.dp)
-            )
-        }
-        if (showPlayerBackgroundSettings) {
-            com.github.soundpod.ui.screens.settings.subscreen.PlayerBackgroundSheet(
-                onDismiss = { showPlayerBackgroundSettings = false }
-            )
-        }
-
         var showDropDown by remember { mutableStateOf(false) }
 
         Box(
@@ -883,6 +879,22 @@ fun PlayerTopControl(
                 DropdownMenuItem(
                     text = {
                         Text(
+                            text = stringResource(id = R.string.save_mp3_downloads),
+                            color = colorPalette.text,
+                            style = typography.bodyLarge
+                        )
+                    },
+                    onClick = {
+                        showDropDown = false
+                        currentMediaItem?.let { mediaItem ->
+                            binder.preCacheManager.cacheFull(mediaItem)
+                            context.toast(context.getString(R.string.downloading_offline))
+                        }
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
                             text = stringResource(id = R.string.track_details),
                             color = colorPalette.text,
                             style = typography.bodyLarge
@@ -891,19 +903,6 @@ fun PlayerTopControl(
                     onClick = {
                         showDropDown = false
                         onTrackDetailsClick()
-                    }
-                )
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = stringResource(id = R.string.customize_player_background),
-                            color = colorPalette.text,
-                            style = typography.bodyLarge
-                        )
-                    },
-                    onClick = {
-                        showDropDown = false
-                        showPlayerBackgroundSettings = true
                     }
                 )
                 DropdownMenuItem(
@@ -1053,7 +1052,6 @@ private fun PlayerSeekBarDefault(
             }
 
             SeekBar(
-                mediaId = mediaId,
                 value = currentDisplayPosition,
                 minimumValue = 0,
                 maximumValue = duration,
@@ -1123,7 +1121,6 @@ private fun WaveAnimation(
     ) {
 
         SimpleWave(
-            mediaId = mediaId,
             value = scrubbingPosition ?: position.toFloat(),
             onValueChange = { scrubbingPosition = it },
             onValueChangeFinished = {
@@ -1177,7 +1174,6 @@ private fun BoatAnimation(
     ) {
 
         PaperBoatAnimation(
-            mediaId = mediaId,
             value = scrubbingPosition ?: position.toFloat(),
             onValueChange = { scrubbingPosition = it },
             onValueChangeFinished = {
