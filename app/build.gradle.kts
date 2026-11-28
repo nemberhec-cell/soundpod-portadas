@@ -47,10 +47,6 @@ extensions.configure<ApplicationExtension>("android") {
         jniLibs {
             useLegacyPackaging = true
         }
-        // Only ship arm64 (most phones). x86_64 (emulators) would double the APK.
-    }
-
-    // (abiFilters is set per-flavor below via ndk)
         resources {
             excludes += setOf(
                 "META-INF/version-control-info.textproto",
