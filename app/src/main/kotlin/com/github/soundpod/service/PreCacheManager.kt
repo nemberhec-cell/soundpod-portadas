@@ -265,6 +265,23 @@ class PreCacheManager(
                     Log.w("SoundPod-PreCache", "Downloaded song $videoId has 0 length. Not marking as Downloaded.")
                 }
                 
+                // Also save a real .mp3 into Download/SoundPod.
+                runCatching {
+                    val title = mediaItem?.mediaMetadata?.title?.toString() ?: videoId
+                    val artist = mediaItem?.mediaMetadata?.artist?.toString()
+                    // Re-download the resolved stream to a temp file and convert.
+                    val tmpWebm = java.io.File(MainApplication.appContext.cacheDir, "dl_$videoId.webm")
+                    val req = okhttp3.Request.Builder().url(uri.toString()).build()
+                    okHttpClient.newCall(req).execute().use { resp ->
+                        if (resp.isSuccessful) resp.body?.byteStream()?.use { input ->
+                            tmpWebm.outputStream().use { out -> input.copyTo(out) }
+                        }
+                    }
+                    if (tmpWebm.exists() && tmpWebm.length() > 0) {
+                        Mp3Exporter.exportToDownloads(MainApplication.appContext, tmpWebm, title, artist)
+                    }
+                    tmpWebm.delete()
+                }
                 withContext(Dispatchers.Main) {
                     MainApplication.appContext.toast(MainApplication.appContext.getString(R.string.download_success, mediaItem?.mediaMetadata?.title ?: videoId))
                 }
