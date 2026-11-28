@@ -149,6 +149,7 @@ dependencies {
     implementation(project(":soundcore"))
 
     implementation(libs.documentfile)
+    implementation(libs.ffmpeg-kit-audio)
     implementation(libs.newpipe.extractor)
 
     testImplementation(libs.junit)
