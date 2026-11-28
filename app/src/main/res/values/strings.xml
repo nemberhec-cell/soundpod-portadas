@@ -422,6 +422,7 @@
     <string name="no_favorites">No favorites</string>
     <string name="download">Download</string>
     <string name="remove_download">Remove download</string>
+    <string name="save_mp3_downloads">Save MP3 to Downloads</string>
     <string name="make_offline">Save offline</string>
     <string name="downloaded">Downloaded</string>
     <string name="no_favorites_description">Tap the heart icon on songs, albums, or artists to add them to your favorites.</string>
