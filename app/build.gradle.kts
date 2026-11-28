@@ -24,6 +24,9 @@ extensions.configure<ApplicationExtension>("android") {
         targetSdk = 37
         versionCode = 33
         versionName = "1.3.7"
+        ndk {
+            abiFilters += "arm64-v8a"
+        }
     }
 
     flavorDimensions += "store"
@@ -44,6 +47,10 @@ extensions.configure<ApplicationExtension>("android") {
         jniLibs {
             useLegacyPackaging = true
         }
+        // Only ship arm64 (most phones). x86_64 (emulators) would double the APK.
+    }
+
+    // (abiFilters is set per-flavor below via ndk)
         resources {
             excludes += setOf(
                 "META-INF/version-control-info.textproto",
