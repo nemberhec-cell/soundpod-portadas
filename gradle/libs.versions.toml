@@ -33,6 +33,7 @@ detekt = "1.23.8"
 work-runtime-ktx = "2.12.0"
 newpipe-extractor = "v0.26.3"
 documentfile = "1.1.0"
+ffmpeg-kit = "8.1.9"
 
 
 junit = "4.13.2"
@@ -91,6 +92,7 @@ compose_lottie = { module = "com.airbnb.android:lottie-compose", version = "6.7.
 work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "work-runtime-ktx" }
 newpipe-extractor = { group = "com.github.TeamNewPipe", name = "NewPipeExtractor", version.ref = "newpipe-extractor" }
 documentfile = { group = "androidx.documentfile", name = "documentfile", version.ref = "documentfile" }
+ffmpeg-kit-audio = { group = "dev.ffmpegkit-maintained", name = "ffmpeg-kit-audio", version.ref = "ffmpeg-kit" }
 
 
 [plugins]
